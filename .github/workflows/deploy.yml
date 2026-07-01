@@ -24,6 +24,17 @@ jobs:
             BRANCH="${{ github.ref_name }}"
             cd "$APP_DIR"
             chown -R root2:root2 "$APP_DIR"
+            ENV_BACKUP=""
+            if [ -f .env ]; then
+              ENV_BACKUP=$(mktemp)
+              cp .env "$ENV_BACKUP"
+            fi
             sudo -u root2 git fetch origin
             sudo -u root2 git reset --hard "origin/${BRANCH}"
+            if [ -n "$ENV_BACKUP" ]; then
+              cp "$ENV_BACKUP" .env
+              rm -f "$ENV_BACKUP"
+              chown root2:root2 .env
+              chmod 640 .env
+            fi
             sudo -u root2 bash scripts/deploy.sh

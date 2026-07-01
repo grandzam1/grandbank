@@ -4,11 +4,14 @@ set -euo pipefail
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$APP_DIR"
 
-for item in favicon.ico mix-manifest.json robots.txt themes temp dash error; do
+for item in css dash dash2 error favicon.ico images mix-manifest.json robots.txt temp themes; do
   if [ -e "$item" ] && [ ! -e "public/$item" ]; then
     ln -sfn "../$item" "public/$item"
   fi
 done
+
+mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+chmod -R ug+rwx storage bootstrap/cache 2>/dev/null || true
 
 if [ -f .htaccess ] && [ ! -f public/.htaccess ]; then
   cp .htaccess public/.htaccess
