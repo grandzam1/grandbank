@@ -4,9 +4,8 @@
     <meta charset="utf-8">
     <title>{{ $settings->site_name }} - Transaction Receipt</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ asset('public/css/dashboard.css') }}?v={{ @filemtime(public_path('css/dashboard.css')) }}">
+    <script src="{{ asset('public/js/dashboard.js') }}?v={{ @filemtime(public_path('js/dashboard.js')) }}" defer></script>
     <style>
         @media print {
             body {
@@ -380,13 +379,6 @@
         </div>
     </div>
 
-    <script>
-        // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-        });
-        
-        // Print functionality is handled by the print button onclick event
-    </script>
+    {{-- Icons + theme init come from public/js/dashboard.js --}}
 </body>
 </html>

@@ -13,6 +13,11 @@ yarn-error.log
 /.idea
 /.vscode
 
+# Local-only test session cookies / accounts (do not commit)
+/test-access/
 
-#Ignore cursor AI rules
-.cursor\rules\codacy.mdc
+# Cursor / Codacy local rules
+.cursor/rules/codacy.mdc
+
+# Mix hot reload
+/public/hot

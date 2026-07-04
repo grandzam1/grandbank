@@ -145,6 +145,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('dashboard')->group(func
 		Route::get('previewinternationaltransfer', [ViewsController::class, 'previewinternationaltransfer'])->name('previewinternationaltransfer');
 		Route::post('localtransfer', [WithdrawalController::class, 'localtransfer'])->name('localtransfer');
 		Route::get('previewtransfer', [WithdrawalController::class, 'previewtransfer'])->name('previewtransfer');
+		Route::get('previewdeposit', [WithdrawalController::class, 'previewdeposit'])->name('previewdeposit');
 
 		// Export transactions route
 		Route::post('export-transactions', [WithdrawalController::class, 'exportTransactions'])->name('export.transactions');

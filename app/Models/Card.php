@@ -51,7 +51,27 @@ class Card extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Legacy `user` column shadows the user() relation.
+     * Always return the related User model (or null).
+     */
+    public function getUserAttribute($value)
+    {
+        if ($this->relationLoaded('user')) {
+            $related = $this->relations['user'];
+            if ($related instanceof User || $related === null) {
+                return $related;
+            }
+        }
+
+        $userId = $this->attributes['user_id'] ?? $value ?? null;
+        $user = $userId ? User::query()->find($userId) : null;
+        $this->setRelation('user', $user);
+
+        return $user;
     }
 
     /**

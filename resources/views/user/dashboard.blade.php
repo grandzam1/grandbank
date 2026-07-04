@@ -118,8 +118,9 @@
     @if(!empty(Auth::user()->profile_photo_path))
         <img 
             alt="{{ Auth::user()->name }}" 
-            src="{{ $settings->site_address }}/storage/app/public/photos/{{ Auth::user()->profile_photo_path }}" 
-            class="h-12 w-12 rounded-full object-cover border-2 border-white/20">
+            src="{{ Auth::user()->profile_photo_url }}" 
+            class="h-12 w-12 rounded-full object-cover border-2 border-white/20"
+            onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random'">
     @else
         @php
             $initials = strtoupper(substr(Auth::user()->name, 0, 1) . substr(Auth::user()->lastname, 0, 1));
@@ -234,37 +235,39 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="quick-actions-grid grid grid-cols-2 md:grid-cols-4 gap-4">
                     <button 
+                        type="button"
                         @click="showBankAccount = true"
-                        class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 transition-all">
-                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
-                            <i data-lucide="building-2" class="h-6 w-6 text-gray-600"></i>
+                        class="menu-tile flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 transition-all">
+                        <div class="menu-tile-icon w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
+                            <i data-lucide="building-2" class="h-6 w-6 text-blue-500"></i>
                         </div>
                         <span class="font-medium text-gray-800">Account Info</span>
                     </button>
                     
                     <button 
+                        type="button"
                         @click="showSendMoney = true"
-                        class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 border border-primary-200 transition-all">
-                        <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center mb-3">
-                            <i data-lucide="send" class="h-6 w-6 text-gray-600"></i>
+                        class="menu-tile flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 border border-primary-200 transition-all">
+                        <div class="menu-tile-icon w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center mb-3">
+                            <i data-lucide="send" class="h-6 w-6 text-emerald-500"></i>
                         </div>
                         <span class="font-medium text-gray-800">Send Money</span>
                     </button>
                     
                     <a href="{{ route('deposits') }}" 
-                        class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border border-green-200 transition-all">
-                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
-                            <i data-lucide="plus" class="h-6 w-6 text-green-600"></i>
+                        class="menu-tile flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border border-green-200 transition-all">
+                        <div class="menu-tile-icon w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
+                            <i data-lucide="download" class="h-6 w-6 text-green-500"></i>
                         </div>
                         <span class="font-medium text-gray-800">Deposit</span>
                     </a>
                     
                     <a href="{{ route('accounthistory') }}"
-                        class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 transition-all">
-                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3">
-                            <i data-lucide="history" class="h-6 w-6 text-purple-600"></i>
+                        class="menu-tile flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 transition-all">
+                        <div class="menu-tile-icon w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3">
+                            <i data-lucide="history" class="h-6 w-6 text-purple-500"></i>
                         </div>
                         <span class="font-medium text-gray-800">History</span>
                     </a>

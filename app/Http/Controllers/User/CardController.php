@@ -113,6 +113,7 @@ class CardController extends Controller
         // Create the card with pending status
         $card = new Card();
         $card->user_id = $user->id;
+        $card->user = $user->id; // legacy column still present on cards table
         $card->card_holder_name = $request->input('card_holder_name', $user->name . ' ' . ($user->lastname ?? ''));
         $card->card_type = $request->card_type;
         $card->daily_limit = $request->daily_limit;

@@ -73,6 +73,29 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_photo_url',
     ];
 
+    /**
+     * Profile photos are stored in storage/app/public/photos and served
+     * from the app root (not via site_address / remote domain).
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        if (empty($this->profile_photo_path)) {
+            $name = trim(($this->name ?? '') . ' ' . ($this->lastname ?? ''));
+
+            return 'https://ui-avatars.com/api/?name=' . urlencode($name !== '' ? $name : 'User') . '&background=random';
+        }
+
+        if (str_starts_with($this->profile_photo_path, 'http://') || str_starts_with($this->profile_photo_path, 'https://')) {
+            return $this->profile_photo_path;
+        }
+
+        $path = ltrim($this->profile_photo_path, '/');
+        if (! str_starts_with($path, 'photos/')) {
+            $path = 'photos/' . $path;
+        }
+
+        return asset('storage/app/public/' . $path);
+    }
 
     public function dp(){
     	return $this->hasMany(Deposit::class, 'user');

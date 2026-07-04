@@ -9,6 +9,7 @@ use App\Models\Settings;
 use App\Models\User_plans;
 use App\Models\Wdmethod;
 use App\Models\Withdrawal;
+use App\Models\Deposit;
 use App\Helpers\NotificationHelper;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\NewNotification;
@@ -630,6 +631,33 @@ if($request->code3){
 
 
     //  International preview international transfer
+
+  /**
+   * Deposit receipt (credits). Separate from withdrawals to avoid id collisions.
+   */
+  public function previewdeposit(Request $request)
+  {
+      if (! $request->filled('id')) {
+          return redirect()->route('accounthistory')
+              ->with('message', 'Deposit receipt id is required.')
+              ->with('type', 'danger');
+      }
+
+      $dp = Deposit::where('id', $request->id)
+          ->where('user', Auth::user()->id)
+          ->first();
+
+      if (! $dp) {
+          return redirect()->route('accounthistory')
+              ->with('message', 'Deposit not found or access denied.')
+              ->with('type', 'danger');
+      }
+
+      $settings = Settings::where('id', '1')->first();
+      $code = $dp->txn_id;
+
+      return view('user.preview-deposit', compact('settings', 'dp', 'code'));
+  }
 
   public function previewtransfer(Request $request)
 {

@@ -34,10 +34,10 @@
                     <div class="relative mb-3">
                         <div class="h-24 w-24 rounded-full border-4 border-white/50 overflow-hidden bg-white shadow-md">
                             <img 
-                                src="{{$settings->site_address}}/storage/app/public/photos/{{Auth::user()->profile_photo_path}}" 
+                                src="{{ Auth::user()->profile_photo_url }}" 
                                 class="h-full w-full object-cover"
                                 alt="{{ Auth::user()->name }}"
-                                onerror="this.src='https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=random'"
+                                onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random'"
                             />
                         </div>
                         <button 
@@ -90,6 +90,37 @@
                         </button>
                     </nav>
                 </div>
+            </div>
+
+            <!-- Appearance / Dark Mode (shadcn-style) -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden p-5 mb-6">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center min-w-0">
+                        <div class="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center mr-3 flex-shrink-0">
+                            <i data-lucide="moon" data-theme-icon-moon class="h-5 w-5 text-gray-700 hidden"></i>
+                            <i data-lucide="sun" data-theme-icon-sun class="h-5 w-5 text-gray-700"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-medium text-gray-900">Appearance</h3>
+                            <p class="text-sm text-gray-500">
+                                <span data-theme-label>Light</span> mode
+                            </p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                        <input
+                            type="checkbox"
+                            data-theme-toggle
+                            class="sr-only peer"
+                            onchange="window.toggleDashboardTheme()"
+                            aria-label="Toggle dark mode"
+                        >
+                        <div class="theme-switch-track w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-400 rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-500 mt-3 leading-relaxed">
+                    Switch between light and dark. Preference is saved in this browser.
+                </p>
             </div>
             
             <!-- Contact Support Card -->

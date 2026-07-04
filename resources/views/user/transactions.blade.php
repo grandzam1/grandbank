@@ -160,10 +160,10 @@
                     </tr>
                     @endforeach
                     
-                    @foreach($deposits as $withdrawal)
-                    <tr class="hover:bg-gray-50 transition-colors" id="{{ $withdrawal->id }}{{ $withdrawal->txn_id }}">
+                    @foreach($deposits as $deposit)
+                    <tr class="hover:bg-gray-50 transition-colors" id="{{ $deposit->id }}{{ $deposit->txn_id }}">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($withdrawal->type == 'Credit')
+                            @if(($deposit->type ?? 'Credit') == 'Credit')
                             <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
                                 <i data-lucide="plus" class="h-5 w-5 text-green-600"></i>
                             </div>
@@ -174,7 +174,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $settings->currency }}{{ number_format($withdrawal->amount, 2, '.', ',') }} {{ $settings->s_currency }}</div>
+                            <div class="text-sm font-medium text-gray-900">{{ $settings->currency }}{{ number_format($deposit->amount, 2, '.', ',') }} {{ $settings->s_currency }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -182,30 +182,30 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($withdrawal->status == 'Pending')
+                            @if($deposit->status == 'Pending')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                 Pending
                             </span>
                             @else
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Completed
+                                {{ $deposit->status ?: 'Completed' }}
                             </span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $withdrawal->txn_id }}
+                            {{ $deposit->txn_id }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $withdrawal->Description }}
+                            {{ $deposit->Description ?? '—' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $withdrawal->payment_mode }}
+                            {{ $deposit->payment_mode }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ \Carbon\Carbon::parse($withdrawal->created_at)->toDayDateTimeString() }}
+                            {{ \Carbon\Carbon::parse($deposit->created_at)->toDayDateTimeString() }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <a href="{{ route('previewtransfer', ['id' => $withdrawal->id]) }}" class="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-primary-700 hover:text-primary-800 hover:bg-primary-50 transition-colors">
+                            <a href="{{ route('previewdeposit', ['id' => $deposit->id]) }}" class="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-primary-700 hover:text-primary-800 hover:bg-primary-50 transition-colors">
                                 <i data-lucide="file-text" class="h-3.5 w-3.5 mr-1"></i>
                                 Receipt
                             </a>

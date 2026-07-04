@@ -7,7 +7,17 @@
     <title>{{ $settings->site_name }} | @yield('title')</title>
     <meta name="description" content="Swift and Secure Money Transfer to any UK bank account will become a breeze with {{$settings->site_name}}." />
     <link rel="shortcut icon" href="{{ asset('storage/app/public/' . $settings->favicon) }}" />
-    
+
+    <!-- Apply saved dark mode before paint to avoid flash -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('grandbank_theme') === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     
     <!-- Initial theme colors setup (before anything else loads) -->
     <script>
@@ -27,60 +37,10 @@
         document.documentElement.style.setProperty('--card-bg-color', '{{ isset($appearanceSettings) ? $appearanceSettings->card_bg_color : "#ffffff" }}');
     </script>
     
-    <!-- Tailwind CSS with custom color variables -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_light : "#f0f9ff" }}',
-                            100: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_light : "#e0f2fe" }}',
-                            200: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_light : "#bae6fd" }}',
-                            300: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_light : "#7dd3fc" }}',
-                            400: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_light : "#38bdf8" }}',
-                            500: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color : "#0ea5e9" }}',
-                            600: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color : "#0284c7" }}',
-                            700: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_dark : "#0369a1" }}',
-                            800: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_dark : "#075985" }}',
-                            900: '{{ isset($appearanceSettings) ? $appearanceSettings->primary_color_dark : "#0c4a6e" }}',
-                        },
-                        secondary: {
-                            50: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_light : "#f0fdfa" }}',
-                            100: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_light : "#ccfbf1" }}',
-                            200: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_light : "#99f6e4" }}',
-                            300: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_light : "#5eead4" }}',
-                            400: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_light : "#2dd4bf" }}',
-                            500: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color : "#14b8a6" }}',
-                            600: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color : "#0d9488" }}',
-                            700: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_dark : "#0f766e" }}',
-                            800: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_dark : "#115e59" }}',
-                            900: '{{ isset($appearanceSettings) ? $appearanceSettings->secondary_color_dark : "#134e4a" }}',
-                        },
-                        accent: {
-                            50: '#fdf2f8',
-                            100: '#fce7f3',
-                            200: '#fbcfe8',
-                            300: '#f9a8d4',
-                            400: '#f472b6',
-                            500: '#ec4899',
-                            600: '#db2777',
-                            700: '#be185d',
-                            800: '#9d174d',
-                            900: '#831843',
-                        }
-                    },
-                    boxShadow: {
-                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Local dashboard assets (Mix: Tailwind + Alpine + Lucide + dark mode) -->
+    {{-- App is served from project root (not /public), so include public/ in the URL --}}
+    <link rel="stylesheet" href="{{ asset('public/css/dashboard.css') }}?v={{ @filemtime(public_path('css/dashboard.css')) }}">
+    <script src="{{ asset('public/js/dashboard.js') }}?v={{ @filemtime(public_path('js/dashboard.js')) }}" defer></script>
     
     @if(isset($appearanceSettings) && $appearanceSettings->custom_css)
     <style>
@@ -96,199 +56,7 @@
         }
     </style>
     @endif
-    
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Custom Fonts -->
-    <style>
-        @font-face {
-            font-family: Graphik;
-            font-weight: 400;
-            src: url("{{ asset('dash2/konanauth/public/public/asset/fonts/Graphik/GraphikRegular.otf') }}");
-        }
-        @font-face {
-            font-family: Graphik;
-            font-weight: 500;
-            src: url("{{ asset('dash2/konanauth/public/asset/fonts/Graphik/GraphikRegular.otf') }}");
-        }
-        @font-face {
-            font-family: Graphik;
-            font-weight: 700;
-            src: url("{{ asset('dash2/konanauth/public/asset/fonts/Graphik/GraphikMedium.otf') }}");
-        }
-        @font-face {
-            font-family: Graphik;
-            font-weight: 800;
-            src: url("{{ asset('dash2/konanauth/public/asset/fonts/Graphik/GraphikBold.otf ') }}");
-        }
-        @font-face {
-            font-family: Graphik;
-            font-weight: 900;
-            src: url("{{ asset('dash2/konanauth/public/asset/fonts/Graphik/GraphikMedium.otf') }}");
-        }
-        
-        body {
-            font-family: "Graphik", sans-serif;
-        }
-    </style>
-    
-    <!-- Modern Loading Animation -->
-    <style>
-        .page-loading {
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transition: all .4s .2s ease-in-out;
-            background-color: #ffffff;
-            visibility: hidden;
-            z-index: 9999;
-        }
-        .page-loading.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .page-loading-inner {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            transform: translateY(-50%);
-            transition: opacity .2s ease-in-out;
-            opacity: 0;
-        }
-        .page-loading.active>.page-loading-inner {
-            opacity: 1;
-        }
-        
-        .loading-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        
-        .loading-animation {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-        
-        .loading-animation .circle {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 4px solid transparent;
-            mix-blend-mode: overlay;
-            animation: rotateCircle 1.5s linear infinite;
-        }
-        
-        .loading-animation .circle:nth-child(1) {
-            border-top-color: var(--primary-color);
-            animation-delay: 0s;
-        }
-        
-        .loading-animation .circle:nth-child(2) {
-            border-right-color: var(--primary-color-light);
-            animation-delay: 0.2s;
-        }
-        
-        .loading-animation .circle:nth-child(3) {
-            border-bottom-color: var(--secondary-color);
-            animation-delay: 0.4s;
-        }
-        
-        .loading-animation .circle:nth-child(4) {
-            border-left-color: var(--primary-color-lightest);
-            animation-delay: 0.6s;
-        }
-        
-        .loading-animation .core {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary-color-light), var(--primary-color-dark));
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-            animation: pulse 1s ease-in-out infinite alternate;
-        }
-        
-        .page-loading .text {
-            color: var(--primary-color);
-            font-weight: 500;
-            letter-spacing: 0.05em;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-            background: linear-gradient(90deg, var(--primary-color-dark), var(--primary-color-light), var(--primary-color-dark));
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient 2s linear infinite;
-        }
-        
-        @keyframes rotateCircle {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-        
-        @keyframes pulse {
-            from {
-                transform: scale(0.8);
-                opacity: 0.8;
-            }
-            to {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+
     @laravelPWA
 </head>
 
@@ -327,9 +95,10 @@
                         <div class="flex items-center mb-3">
     <div class="flex-shrink-0 mr-3">
         @if(!empty(Auth::user()->profile_photo_path))
-            <img src="{{ $settings->site_address }}/storage/app/public/photos/{{ Auth::user()->profile_photo_path }}" 
+            <img src="{{ Auth::user()->profile_photo_url }}" 
                 alt="{{ Auth::user()->name }}" 
-                class="h-10 w-10 rounded-full object-cover border-2 border-primary-100">
+                class="h-10 w-10 rounded-full object-cover border-2 border-primary-100"
+                onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random'">
         @else
             @php
                 $initials = strtoupper(substr(Auth::user()->name, 0, 1) . substr(Auth::user()->lastname, 0, 1));
@@ -597,8 +366,9 @@
     @if(!empty(Auth::user()->profile_photo_path))
         <img 
             class="h-8 w-8 rounded-full object-cover border-2 border-gray-200" 
-            src="{{ $settings->site_address }}/storage/app/public/photos/{{ Auth::user()->profile_photo_path }}" 
+            src="{{ Auth::user()->profile_photo_url }}" 
             alt="{{ Auth::user()->name }}"
+            onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random'"
         >
     @else
         @php
@@ -691,7 +461,7 @@
                     @click="mobileMenuOpen = false"></div>
                 
                 <!-- Popup Content - Centered Box -->
-                <div class="relative w-11/12 max-w-md bg-white rounded-2xl shadow-2xl p-5 z-50">
+                <div class="mobile-banking-menu relative w-11/12 max-w-md bg-white rounded-2xl shadow-2xl p-5 z-50">
                     <!-- Close button -->
                     <button 
                         type="button" 
@@ -705,9 +475,10 @@
                         <div class="flex-shrink-0 mr-3">
     @if(!empty(Auth::user()->profile_photo_path))
         <img 
-            src="{{ $settings->site_address }}/storage/app/public/photos/{{ Auth::user()->profile_photo_path }}" 
+            src="{{ Auth::user()->profile_photo_url }}" 
             alt="{{ Auth::user()->name }}" 
-            class="h-12 w-12 rounded-full object-cover border-2 border-primary-100">
+            class="h-12 w-12 rounded-full object-cover border-2 border-primary-100"
+            onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=random'">
     @else
         @php
             $initials = strtoupper(substr(Auth::user()->name, 0, 1) . substr(Auth::user()->lastname, 0, 1));
@@ -751,93 +522,93 @@
                         <p class="text-sm text-gray-500">Select an option to continue</p>
                     </div>
                     
-                    <!-- Grid Menu - 3x3 Grid -->
+                    <!-- Grid Menu — inspiration: dark zinc tiles, white labels, colored icons -->
                     <div class="grid grid-cols-3 gap-3">
                         <a href="{{ route('dashboard') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="home" class="h-5 w-5 text-black"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="home" class="h-5 w-5 text-blue-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Home</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('accounthistory') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="activity" class="h-5 w-5 text-secondary-600"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="activity" class="h-5 w-5 text-green-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Activity</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('cards') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="credit-card" class="h-5 w-5 text-black"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="credit-card" class="h-5 w-5 text-purple-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Cards</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('localtransfer') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="send" class="h-5 w-5 text-secondary-600"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="send" class="h-5 w-5 text-emerald-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Transfer</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('internationaltransfer') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="globe" class="h-5 w-5 text-secondary-600"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="globe" class="h-5 w-5 text-sky-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Int'l Wire</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('deposits') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="download" class="h-5 w-5 text-black"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="download" class="h-5 w-5 text-orange-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Deposit</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('loan') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="credit-card" class="h-5 w-5 text-secondary-600"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="banknote" class="h-5 w-5 text-violet-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Loan</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('irs-refund') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="receipt" class="h-5 w-5 text-black"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="receipt" class="h-5 w-5 text-amber-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">IRS Refund</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('profile') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="settings" class="h-5 w-5 text-black"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="settings" class="h-5 w-5 text-zinc-400"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Settings</span>
                             </div>
                         </a>
                         
                         <a href="{{ route('support') }}" class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="help-circle" class="h-5 w-5 text-secondary-600"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="help-circle" class="h-5 w-5 text-cyan-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Support</span>
                             </div>
@@ -846,9 +617,9 @@
                         <a href="{{ route('logout') }}" 
                             onclick="event.preventDefault(); document.getElementById('logout-form-grid').submit();"
                             class="group">
-                            <div class="aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 hover:from-accent-100 hover:to-accent-200 transition-all duration-300 p-2">
-                                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
-                                    <i data-lucide="log-out" class="h-5 w-5 text-accent-600"></i>
+                            <div class="menu-tile aspect-square flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 hover:from-accent-100 hover:to-accent-200 transition-all duration-300 p-2">
+                                <div class="menu-tile-icon h-10 w-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm group-hover:shadow transition-all">
+                                    <i data-lucide="log-out" class="h-5 w-5 text-red-500"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-700">Logout</span>
                             </div>
@@ -931,55 +702,6 @@
         </div>
     </div>
 
-    <!-- Initialize Lucide Icons -->
-    <script>
-        lucide.createIcons();
-    </script>
-    
-    <!-- Enhanced Page Loading Animation -->
-    <script>
-        window.onload = function() {
-            const preloader = document.querySelector('.page-loading');
-            
-            // Add a slight delay to make loading animation more noticeable
-            setTimeout(function() {
-                preloader.classList.remove('active');
-                setTimeout(function() {
-                    preloader.remove();
-                }, 500);
-            }, 800);
-        };
-    </script>
-    
-    <!-- Date and Time Updates -->
-    <script>
-        // Function to update current time
-        function updateDateTime() {
-            const now = new Date();
-            const timeElements = document.querySelectorAll('[data-current-time]');
-            const dateElements = document.querySelectorAll('[data-current-date]');
-            
-            if (timeElements.length > 0) {
-                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                timeElements.forEach(el => {
-                    el.textContent = timeString;
-                });
-            }
-            
-            if (dateElements.length > 0) {
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const dateString = now.toLocaleDateString(undefined, options);
-                dateElements.forEach(el => {
-                    el.textContent = dateString;
-                });
-            }
-        }
-        
-        // Update time every minute
-        updateDateTime();
-        setInterval(updateDateTime, 60000);
-    </script>
-    
     @if($settings->whatsapp)
     <script type="text/javascript">
         (function () {

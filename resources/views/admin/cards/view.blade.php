@@ -49,7 +49,7 @@
                                         <div class="d-flex justify-content-between">
                                             <div>
                                                 <small class="text-white-50">CARD HOLDER</small>
-                                                <p class="text-white mb-0">{{ $card->user->name }}</p>
+                                                <p class="text-white mb-0">{{ $card->user->name ?? $card->card_holder_name ?? 'N/A' }}</p>
                                             </div>
                                             <div>
                                                 <small class="text-white-50">EXPIRES</small>
@@ -119,11 +119,11 @@
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">Created On</td>
-                                                <td>{{ $card->created_at->format('M d, Y h:i A') }}</td>
+                                                <td>{{ $card->created_at?->format('M d, Y h:i A') ?? 'N/A' }}</td>
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">Last Updated</td>
-                                                <td>{{ $card->updated_at->format('M d, Y h:i A') }}</td>
+                                                <td>{{ $card->updated_at?->format('M d, Y h:i A') ?? 'N/A' }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -168,13 +168,13 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     @if ($card->user && $card->user->profile_photo_path)
-                                        <img src="{{ asset('storage/app/public/photos/'.$card->user->profile_photo_path) }}" alt="profile" class="mr-3 rounded-circle" style="width: 60px; height: 60px;">
+                                        <img src="{{ $card->user->profile_photo_url }}" alt="profile" class="mr-3 rounded-circle" style="width: 60px; height: 60px;">
                                     @else
                                         <img src="{{ asset('dash/images/profile/profile.png') }}" alt="profile" class="mr-3 rounded-circle" style="width: 60px; height: 60px;">
                                     @endif
                                     <div>
-                                        <h5 class="mb-0">{{ $card->user->name }}</h5>
-                                        <p class="text-muted mb-0">{{ $card->user->email }}</p>
+                                        <h5 class="mb-0">{{ $card->user->name ?? $card->card_holder_name ?? 'N/A' }}</h5>
+                                        <p class="text-muted mb-0">{{ $card->user->email ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                                 <div class="table-responsive">
@@ -182,7 +182,7 @@
                                         <tbody>
                                             <tr>
                                                 <td class="font-weight-bold">Account ID</td>
-                                                <td>{{ $card->user->id }}</td>
+                                                <td>{{ $card->user->id ?? $card->user_id ?? 'N/A' }}</td>
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">Phone</td>
@@ -194,14 +194,16 @@
                                             </tr>
                                             <tr>
                                                 <td class="font-weight-bold">Joined On</td>
-                                                <td>{{ $card->user->created_at->format('M d, Y') }}</td>
+                                                <td>{{ $card->user?->created_at?->format('M d, Y') ?? 'N/A' }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-                                <a href="{{ route('viewuser', $card->user->id) }}" class="btn btn-primary btn-block">
-                                    <i class="fa fa-user"></i> View User Profile
-                                </a>
+                                @if($card->user)
+                                    <a href="{{ route('viewuser', $card->user->id) }}" class="btn btn-primary btn-block">
+                                        <i class="fa fa-user"></i> View User Profile
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -318,7 +320,7 @@
                                                             <span class="badge badge-secondary">{{ ucfirst($transaction->status) }}</span>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $transaction->transaction_date->format('M d, Y h:i A') }}</td>
+                                                    <td>{{ $transaction->transaction_date?->format('M d, Y h:i A') ?? ($transaction->created_at?->format('M d, Y h:i A') ?? 'N/A') }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>
