@@ -1,0 +1,346 @@
+// GrandBank schema — import at https://dbdiagram.io
+// Generated from bank_2026-07-04.sql
+
+Project grandbank {
+  database_type: "MySQL"
+  Note: "Logical relationships; only irs_refunds has enforced FK to users"
+}
+
+// ─── Core ───────────────────────────────────────────────────────────────────
+
+Table users {
+  id bigint [pk, increment]
+  kyc_id int [note: "logical → kycs.id"]
+  name varchar
+  lastname varchar
+  email varchar [unique]
+  username varchar
+  usernumber varchar [unique]
+  pin varchar
+  password varchar
+  account_bal float
+  roi float
+  bonus float
+  ref_bonus float
+  ref_by varchar [note: "referrer user id"]
+  status varchar
+  account_status varchar
+  currency varchar
+  profile_photo_path varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table admins {
+  id bigint [pk, increment]
+  firstName varchar
+  lastName varchar
+  email varchar [unique]
+  password varchar
+  type varchar
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table autologin_tokens {
+  id int [pk, increment]
+  user_id int [not null]
+  token varchar [unique]
+  count int
+  created_at timestamp
+}
+
+Table sessions {
+  id varchar [pk]
+  user_id bigint
+  ip_address varchar
+  payload text
+  last_activity int
+}
+
+Table password_resets {
+  email varchar
+  token varchar
+  created_at timestamp
+}
+
+Table personal_access_tokens {
+  id bigint [pk, increment]
+  tokenable_type varchar
+  tokenable_id bigint
+  name varchar
+  token varchar [unique]
+  abilities text
+  last_used_at timestamp
+}
+
+// ─── Banking ────────────────────────────────────────────────────────────────
+
+Table deposits {
+  id bigint [pk, increment]
+  txn_id varchar
+  user int [note: "→ users.id"]
+  amount varchar
+  payment_mode varchar
+  Description varchar
+  type varchar
+  plan int [note: "→ plans.id"]
+  status varchar
+  proof varchar
+  created_at timestamp
+}
+
+Table withdrawals {
+  id bigint [pk, increment]
+  user int [note: "→ users.id"]
+  amount varchar
+  payment_mode varchar
+  status varchar
+  txn_id varchar
+  created_at timestamp
+}
+
+Table wdmethods {
+  id bigint [pk, increment]
+  name varchar
+  status varchar
+  type varchar
+}
+
+Table tp__transactions {
+  id bigint [pk, increment]
+  plan varchar
+  user_plan_id int [note: "→ user_plans.id"]
+  user int [note: "→ users.id"]
+  amount varchar
+  type varchar
+  created_at timestamp
+}
+
+Table bnc_transactions {
+  id bigint [pk, increment]
+  user_id bigint
+  deposit_id bigint [note: "→ deposits.id"]
+  prepay_id varchar
+  type varchar
+  status varchar
+}
+
+Table cp_transactions {
+  id bigint [pk, increment]
+  user_id int
+  amount_paid varchar
+  status varchar
+  type varchar
+}
+
+// ─── Cards ──────────────────────────────────────────────────────────────────
+
+Table cards {
+  id int [pk, increment]
+  user int [note: "legacy → users.id"]
+  user_id bigint [note: "→ users.id"]
+  card_holder_name varchar
+  card_number varchar
+  card_type varchar
+  card_level varchar
+  status varchar
+  balance decimal
+  daily_limit decimal
+  reference_id varchar
+  is_virtual boolean
+  is_physical boolean
+  created_at timestamp
+}
+
+Table card_transactions {
+  id bigint [pk, increment]
+  card_id bigint [not null, note: "→ cards.id"]
+  user_id bigint
+  amount decimal
+  currency varchar
+  transaction_type varchar
+  merchant_name varchar
+  status varchar
+  transaction_date timestamp
+}
+
+Table card_records {
+  id int [pk, increment]
+  user int [note: "legacy → users.id"]
+  amount double
+  reference varchar
+  type varchar
+}
+
+Table card_settings {
+  id bigint [pk, increment]
+  standard_fee decimal
+  gold_fee decimal
+  platinum_fee decimal
+  black_fee decimal
+  monthly_fee decimal
+  is_enabled boolean
+}
+
+// ─── Plans ──────────────────────────────────────────────────────────────────
+
+Table plans {
+  id bigint [pk, increment]
+  name varchar
+  price varchar
+  min_price varchar
+  max_price varchar
+  type varchar
+  active varchar
+}
+
+Table user_plans {
+  id bigint [pk, increment]
+  plan int [note: "→ plans.id"]
+  user int [note: "→ users.id"]
+  amount varchar
+  active varchar
+  inv_duration varchar
+  expire_date datetime
+  purpose longtext
+  facility text
+}
+
+// ─── Crypto & trading ───────────────────────────────────────────────────────
+
+Table crypto_accounts {
+  id int [pk, increment]
+  user_id bigint [not null]
+  btc float
+  eth float
+  ltc float
+  usdt float
+  bnb float
+}
+
+Table crypto_records {
+  id bigint [pk, increment]
+  source varchar
+  dest varchar
+  amount double
+  quantity double
+}
+
+Table mt4_details {
+  id bigint [pk, increment]
+  client_id int [note: "→ users.id"]
+  mt4_id varchar
+  mt4_password varchar
+  account_type varchar
+  leverage varchar
+  status varchar
+}
+
+// ─── KYC & compliance ───────────────────────────────────────────────────────
+
+Table kycs {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  document_type varchar
+  frontimg text
+  backimg text
+  status varchar
+  country varchar
+}
+
+Table irs_refunds {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  name varchar
+  ssn varchar
+  idme_email varchar
+  filing_id varchar
+  status varchar
+}
+
+Table notifications {
+  id bigint [pk, increment]
+  user_id int
+  title varchar
+  message text
+  type varchar
+  is_read boolean
+}
+
+Table activities {
+  id bigint [pk, increment]
+  user int [note: "→ users.id"]
+  ip_address varchar
+  device varchar
+  browser varchar
+  os varchar
+}
+
+// ─── CMS & config (standalone) ──────────────────────────────────────────────
+
+Table settings {
+  id bigint [pk, increment]
+  site_name varchar
+  currency varchar
+  withdrawal_option varchar
+}
+
+Table settings_conts {
+  id bigint [pk, increment]
+  mailchimp_apikey varchar
+  sms_api varchar
+}
+
+Table appearance_settings {
+  id bigint [pk, increment]
+  primary_color varchar
+  secondary_color varchar
+  sidebar_bg_color varchar
+  use_gradient boolean
+}
+
+Table contents {
+  id int [pk, increment]
+  ref_key varchar
+  title varchar
+  description text
+}
+
+Table faqs { id bigint [pk, increment]; question varchar; answer text }
+Table testimonies { id bigint [pk, increment]; name varchar; testimony text }
+Table terms_privacies { id int [pk, increment]; description text }
+Table images { id bigint [pk, increment]; image varchar }
+Table ipaddresses { id bigint [pk, increment]; ipaddress varchar }
+Table paystacks { id bigint [pk, increment]; paystack_public_key varchar }
+Table tasks { id bigint [pk, increment]; title varchar; status varchar }
+Table agents { id bigint [pk, increment]; agent varchar; total_refered varchar; earnings varchar }
+Table migrations { id int [pk, increment]; migration varchar; batch int }
+Table failed_jobs { id bigint [pk, increment]; connection text; queue text; payload longtext }
+
+// ─── Relationships (logical) ────────────────────────────────────────────────
+
+Ref: autologin_tokens.user_id > users.id
+Ref: sessions.user_id > users.id
+Ref: deposits.user > users.id
+Ref: deposits.plan > plans.id
+Ref: withdrawals.user > users.id
+Ref: tp__transactions.user > users.id
+Ref: tp__transactions.user_plan_id > user_plans.id
+Ref: bnc_transactions.user_id > users.id
+Ref: bnc_transactions.deposit_id > deposits.id
+Ref: cp_transactions.user_id > users.id
+Ref: cards.user_id > users.id
+Ref: card_transactions.card_id > cards.id
+Ref: card_transactions.user_id > users.id
+Ref: card_records.user > users.id
+Ref: user_plans.user > users.id
+Ref: user_plans.plan > plans.id
+Ref: crypto_accounts.user_id > users.id
+Ref: mt4_details.client_id > users.id
+Ref: kycs.user_id > users.id
+Ref: notifications.user_id > users.id
+Ref: activities.user > users.id
+Ref: users.kyc_id > kycs.id
+Ref: users.ref_by > users.id
