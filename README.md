@@ -1,61 +1,39 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# GrandBank
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel-based online banking platform with user dashboards, admin panel, deposits/withdrawals, virtual cards, investment plans, and crypto features.
 
-## About Laravel
+## Database
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The `database/` folder contains the current schema snapshot and ER diagrams for the `bank` MySQL database.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| File | Description |
+|------|-------------|
+| [`database/bank_2026-07-04.sql`](database/bank_2026-07-04.sql) | Full SQL dump (structure + data, 39 tables) |
+| [`database/ER-DIAGRAM.md`](database/ER-DIAGRAM.md) | Entity-relationship diagrams in Mermaid (renders on GitHub and in Cursor) |
+| [`database/schema.dbml`](database/schema.dbml) | DBML schema for [dbdiagram.io](https://dbdiagram.io) — import for an interactive, exportable diagram |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Viewing the ER diagrams
 
-## Learning Laravel
+- **GitHub / Cursor:** Open [`database/ER-DIAGRAM.md`](database/ER-DIAGRAM.md). Mermaid blocks render automatically.
+- **dbdiagram.io:** Copy the contents of [`database/schema.dbml`](database/schema.dbml) into the editor, or import the file directly.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Restore the database
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+mysql -u root bank < database/bank_2026-07-04.sql
+```
 
-## Laravel Sponsors
+Or import `database/bank_2026-07-04.sql` via phpMyAdmin.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### Migrations
 
-### Premium Partners
+Schema changes are managed through Laravel migrations in [`database/migrations/`](database/migrations/).
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/)**
-- **[OP.GG](https://op.gg)**
+## Tech stack
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- PHP / Laravel
+- MySQL (MariaDB)
+- Laravel Mix, Tailwind CSS, Alpine.js (user dashboard assets)
 
 ## License
 
