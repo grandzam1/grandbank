@@ -26,6 +26,8 @@ use Illuminate\Http\Request;
 use App\Models\Kyc;
 use App\Models\OrdersP2p;
 use App\Models\Task;
+use App\Support\AdminUserAccess;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -36,17 +38,27 @@ class HomeController extends Controller
      */
     public function index()
     {
-        //sum total deposited
-        $total_deposited = DB::table('deposits')->select(DB::raw("SUM(amount) as count"))->where('status', 'Processed')->get();
-        $pending_deposited = DB::table('deposits')->select(DB::raw("SUM(amount) as count"))->where('status', 'Pending')->get();
-        $total_withdrawn = DB::table('withdrawals')->select(DB::raw("SUM(amount) as count"))->where('status', 'Processed')->get();
-        $pending_withdrawn = DB::table('withdrawals')->select(DB::raw("SUM(amount) as count"))->where('status', 'Pending')->get();
+        $admin = Auth::guard('admin')->user();
+        $userQuery = User::query()->visibleToAdmin($admin);
 
-        $userlist = User::count();
-        $activeusers = User::where('status', 'active')->count();
-        $blockeusers = User::where('status', 'blocked')->count();
+        //sum total deposited
+        $depositQuery = Deposit::query();
+        $withdrawalQuery = Withdrawal::query();
+        if (! AdminUserAccess::isSuperAdmin($admin)) {
+            $depositQuery->whereHas('duser', fn ($q) => AdminUserAccess::scopeForAdmin($q, $admin));
+            $withdrawalQuery->whereHas('duser', fn ($q) => AdminUserAccess::scopeForAdmin($q, $admin));
+        }
+
+        $total_deposited = (clone $depositQuery)->select(DB::raw("SUM(amount) as count"))->where('status', 'Processed')->get();
+        $pending_deposited = (clone $depositQuery)->select(DB::raw("SUM(amount) as count"))->where('status', 'Pending')->get();
+        $total_withdrawn = (clone $withdrawalQuery)->select(DB::raw("SUM(amount) as count"))->where('status', 'Processed')->get();
+        $pending_withdrawn = (clone $withdrawalQuery)->select(DB::raw("SUM(amount) as count"))->where('status', 'Pending')->get();
+
+        $userlist = (clone $userQuery)->count();
+        $activeusers = (clone $userQuery)->where('status', 'active')->count();
+        $blockeusers = (clone $userQuery)->where('status', 'blocked')->count();
         $plans = Plans::count();
-        $unverifiedusers = User::where('account_verify', '!=', 'yes')->count();
+        $unverifiedusers = (clone $userQuery)->where('account_verify', '!=', 'yes')->count();
 
         $chart_pdepsoit = DB::table('deposits')->where('status', 'Processed')->sum('amount');
         $chart_pendepsoit = DB::table('deposits')->where('status', 'Pending')->sum('amount');
@@ -137,9 +149,12 @@ class HomeController extends Controller
 
     public function activeInvestments()
     {
+    $admin = Auth::guard('admin')->user();
+
     return view('admin.Plans.activeinv', [
         'title' => 'Active investment plans',
         'plans' => User_plans::whereIn('active', ['Pending', 'Processed'])
+            ->whereHas('duser', fn ($q) => AdminUserAccess::scopeForAdmin($q, $admin))
             ->orderByDesc('id')
             ->with(['dplan', 'duser'])
             ->get(),
@@ -187,10 +202,16 @@ class HomeController extends Controller
     //Return manage withdrawals route
     public function mwithdrawals()
     {
+        $admin = Auth::guard('admin')->user();
+
         return view('admin.Withdrawals.mwithdrawals')
             ->with(array(
                 'title' => 'Manage users withdrawals',
-                'withdrawals' => Withdrawal::with('duser')->orderBy('id', 'desc')->get(),
+                'withdrawals' => AdminUserAccess::scopeRelationForAdmin(
+                    Withdrawal::with('duser')->orderBy('id', 'desc'),
+                    'duser',
+                    $admin
+                )->get(),
 
             ));
     }
@@ -198,14 +219,16 @@ class HomeController extends Controller
     //Return manage deposits route
     public function mdeposits()
     {
-        // $token = DB::table('settings_conts')->where('id', 1)->select('purchase_code')->first();
-
-        // $minihack = Http::withToken($token->purchase_code)->accept('application/json')->get('http://example.com');
+        $admin = Auth::guard('admin')->user();
 
         return view('admin.Deposits.mdeposits')
             ->with(array(
                 'title' => 'Manage users deposits',
-                'deposits' => Deposit::with('duser')->orderBy('id', 'desc')->get(),
+                'deposits' => AdminUserAccess::scopeRelationForAdmin(
+                    Deposit::with('duser')->orderBy('id', 'desc'),
+                    'duser',
+                    $admin
+                )->get(),
 
             ));
     }
@@ -328,18 +351,28 @@ class HomeController extends Controller
     //Return KYC route
     public function kyc()
     {
+        $admin = Auth::guard('admin')->user();
+
         return view('admin.kyc', [
             'title' => 'KYC Applications',
-            'kycs' => Kyc::orderByDesc('id')->with(['user'])->get(),
+            'kycs' => AdminUserAccess::scopeRelationForAdmin(
+                Kyc::orderByDesc('id')->with(['user']),
+                'user',
+                $admin
+            )->get(),
         ]);
     }
 
     public function viewKycApplication($id)
     {
+        $kyc = Kyc::where('id', $id)->with(['user'])->firstOrFail();
+        if ($kyc->user) {
+            AdminUserAccess::authorizeUserAccess(Auth::guard('admin')->user(), (int) $kyc->user->id);
+        }
 
         return view('admin.kyc-applications', [
             'title' => 'View KYC Application',
-            'kyc' => Kyc::where('id', $id)->with(['user'])->first(),
+            'kyc' => $kyc,
         ]);
     }
 

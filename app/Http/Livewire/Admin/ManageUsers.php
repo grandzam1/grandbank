@@ -11,7 +11,9 @@ use App\Models\User;
 use App\Models\User_plans;
 use App\Models\Withdrawal;
 use App\Traits\PingServer;
+use App\Support\AdminUserAccess;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\WithPagination;
@@ -54,10 +56,53 @@ class ManageUsers extends Component
 
     public function getUsersProperty()
     {
+        $query = User::query()->visibleToAdmin(Auth::guard('admin')->user());
 
-        return User::search($this->searchvalue)
+        if (filled($this->searchvalue)) {
+            $search = $this->searchvalue;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%')
+                    ->orWhere('username', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        return $query
+            ->with('assignedAdmin')
             ->orderBy($this->orderby, $this->orderdirection)
             ->paginate($this->pagenum);
+    }
+
+    public function assignStaff($userId, $adminId)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        if (! AdminUserAccess::isSuperAdmin($admin)) {
+            return;
+        }
+
+        User::where('id', $userId)->update([
+            'assign_to' => $adminId === '' || $adminId === '0' ? null : $adminId,
+        ]);
+
+        session()->flash('success', 'Customer assignment updated.');
+    }
+
+    protected function authorizedCheckRecords(): array
+    {
+        $admin = Auth::guard('admin')->user();
+
+        if (AdminUserAccess::isSuperAdmin($admin)) {
+            return $this->checkrecord;
+        }
+
+        return User::query()
+            ->visibleToAdmin($admin)
+            ->whereIn('id', $this->checkrecord)
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
     }
 
     public function render()
@@ -68,6 +113,9 @@ class ManageUsers extends Component
         return view('livewire.admin.manage-users', [
             'users' => $this->users,
             'plans' => Plans::all(),
+            'staffAdmins' => AdminUserAccess::isSuperAdmin(Auth::guard('admin')->user())
+                ? AdminUserAccess::assignableStaff()
+                : collect(),
         ]);
     }
 
@@ -124,7 +172,7 @@ class ManageUsers extends Component
     {
 
         $users = DB::table('users')
-            ->whereIn('id', $this->checkrecord)
+            ->whereIn('id', $this->authorizedCheckRecords())
             ->get();
         $plan = Plans::where('id', $this->plan)->first();
 
@@ -167,7 +215,7 @@ class ManageUsers extends Component
     public function topup()
     {
         $users = DB::table('users')
-            ->whereIn('id', $this->checkrecord)
+            ->whereIn('id', $this->authorizedCheckRecords())
             ->get();
 
         foreach ($users as $user) {
@@ -219,7 +267,7 @@ class ManageUsers extends Component
     {
 
         $users = DB::table('users')
-            ->whereIn('id', $this->checkrecord)
+            ->whereIn('id', $this->authorizedCheckRecords())
             ->get();
 
         foreach ($users as $user) {

@@ -20,7 +20,7 @@
         <div class="relative flex flex-col justify-center items-center w-full h-full text-white p-12 z-10">
             <!-- Logo -->
             <a href="/" class="mb-6">
-                <img src="{{ asset('storage/app/public/' . $settings->logo) }}" alt="Logo" class="h-16 filter brightness-0 invert">
+                <img src="{{ asset('storage/' . $settings->logo) }}" alt="Logo" class="site-logo site-logo--auth filter brightness-0 invert">
             </a>
             
             <!-- Title -->
@@ -67,7 +67,7 @@
             <!-- Mobile Logo -->
             <div class="lg:hidden text-center mb-8">
                 <a href="/">
-                    <img src="{{ asset('storage/app/public/' . $settings->logo) }}" alt="Logo" class="h-12 mx-auto">
+                    <img src="{{ asset('storage/' . $settings->logo) }}" alt="Logo" class="site-logo site-logo--auth-mobile mx-auto">
                 </a>
             </div>
             
@@ -139,7 +139,7 @@
                                         type="password" 
                                         name="password"
                                         class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
-                                        placeholder="••••••••"
+                                        placeholder="Enter your password"
                                         required
                                         autocomplete="current-password">
                                     <button 

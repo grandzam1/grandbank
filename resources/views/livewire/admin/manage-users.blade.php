@@ -95,6 +95,9 @@
                                                 <th>Email</th>
                                                 <th>Phone</th>
                                                 <th>Status</th>
+                                                @if (\App\Support\AdminUserAccess::isSuperAdmin(Auth('admin')->user()))
+                                                    <th>Assigned to</th>
+                                                @endif
                                                 <th>Date registered</th>
                                                 <th>Action</th>
                                             </tr>
@@ -107,7 +110,7 @@
                                                         <input type="checkbox" wire:model='checkrecord'
                                                             value="{{ $user->id }}" />
                                                     </td>
-                                                    <td><img alt="" src="{{$settings->site_address}}/storage/app/public/photos/{{$user->profile_photo_path}}" width="35" height="35" style='border-radius: 50%;'>{{ $user->name }}</td>
+                                                    <td><img alt="" src="{{ asset('storage/photos/' . $user->profile_photo_path) }}" width="35" height="35" style='border-radius: 50%;'>{{ $user->name }}</td>
                                                     <td>{{ $user->username }}</td>
                                                     <td>{{ $user->email }}</td>
                                                     <td>{{ $user->phone }}</td>
@@ -119,6 +122,21 @@
                                                             <span class='badge badge-danger'>{{ $user->status }}</span>
                                                         @endif
                                                     </td>
+                                                    @if (\App\Support\AdminUserAccess::isSuperAdmin(Auth('admin')->user()))
+                                                        <td>
+                                                            <select class="form-control form-control-sm"
+                                                                wire:change="assignStaff({{ $user->id }}, $event.target.value)">
+                                                                <option value="">Unassigned (Super Admin)</option>
+                                                                @foreach ($staffAdmins as $staff)
+                                                                    <option value="{{ $staff->id }}"
+                                                                        @if ((string) $user->assign_to === (string) $staff->id) selected @endif>
+                                                                        {{ $staff->firstName }} {{ $staff->lastName }}
+                                                                        ({{ $staff->type }})
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                    @endif
                                                     <td>
                                                         {{ $user->created_at->diffForHumans() }}
                                                     </td>
@@ -130,7 +148,7 @@
                                                     </td>
                                                 </tr>
                                             @empty
-                                                <td colspan="9">
+                                                <td colspan="{{ \App\Support\AdminUserAccess::isSuperAdmin(Auth('admin')->user()) ? 10 : 9 }}">
                                                     No Data Available
                                                 </td>
                                             @endforelse

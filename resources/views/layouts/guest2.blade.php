@@ -9,7 +9,8 @@
     <meta name="apple-mobile-web-app-title" content="{{$settings->site_name}}">
     <meta name="application-name" content="{{$settings->site_name}}">
     <meta name="description" content="Swift and Secure Money Transfer to any UK bank account will become a breeze with {{$settings->site_name}}.">
-    <link rel="shortcut icon" href="{{ asset('storage/app/public/' . $settings->favicon) }}">
+    <link rel="shortcut icon" href="{{ asset('storage/' . $settings->favicon) }}">
+    <link rel="stylesheet" href="{{ asset('css/site-branding.css') }}?v={{ @filemtime(public_path('css/site-branding.css')) }}">
     
     
     <!-- Tailwind CSS -->
@@ -296,9 +297,11 @@
         
     </script>
     
-    <!-- Tidio Chat -->
-    @if($settings->tido)
-    <script src="//code.tidio.co/{{$settings->tido}}" async></script>
+    <!-- Chat widgets -->
+    @if(!empty($settings->tawk_to))
+    <script>{!! $settings->tawk_to !!}</script>
+    @elseif(!empty($settings->tido))
+    <script src="//code.tidio.co/{{ $settings->tido }}" async></script>
     @endif
     
     <!-- Additional Scripts -->

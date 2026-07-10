@@ -1,16 +1,28 @@
-/* Public website logo sizing (layouts/base.blade.php) */
+/* Public website + auth logo sizing */
 
-.site-logo {
-    width: auto;
-    height: auto;
-    max-height: 42px;
-    max-width: 140px;
+.site-logo,
+a img.site-logo,
+.navbar-brand img.site-logo {
+    width: auto !important;
+    height: auto !important;
+    max-height: 36px !important;
+    max-width: 120px !important;
     object-fit: contain;
 }
 
 .site-logo--footer {
-    max-height: 34px;
-    max-width: 120px;
+    max-height: 28px !important;
+    max-width: 100px !important;
+}
+
+.site-logo--auth {
+    max-height: 40px !important;
+    max-width: 130px !important;
+}
+
+.site-logo--auth-mobile {
+    max-height: 32px !important;
+    max-width: 110px !important;
 }
 
 .header-wrap .navbar-brand {
@@ -19,3 +31,9 @@
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
 }
+
+.footers-logo img.site-logo {
+    max-height: 28px !important;
+    max-width: 100px !important;
+}
+

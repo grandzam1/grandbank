@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Concerns\AuthorizesAdminUserAccess;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Settings;
@@ -24,6 +25,7 @@ use App\Models\Tp_Transaction;
 use App\Models\Activity;
 use App\Models\CryptoAccount;
 use App\Support\UserImpersonation;
+use App\Support\AdminUserAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -35,14 +37,17 @@ use App\Models\Kyc;
 use App\Traits\PingServer;
 use Illuminate\Support\Facades\Mail;
 use App\Helpers\NotificationHelper;
+use Illuminate\Database\Eloquent\Builder;
 
 class ManageUsersController extends Controller
 {
     use PingServer;
+    use AuthorizesAdminUserAccess;
 
     // See user wallet balances
     public function loginactivity($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         $user = User::findOrFail($id);
 
         return view('admin.Users.loginactivity', [
@@ -54,6 +59,7 @@ class ManageUsersController extends Controller
 
     public function showUsers($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         $user = User::where('id', $id)->first();
         $ref = User::whereNull('ref_by')->where('id', '!=', $id)->get();
 
@@ -66,7 +72,7 @@ class ManageUsersController extends Controller
 
     public function fetchUsers()
     {
-        $users = User::orderByDesc('id')->get();
+        $users = User::visibleToAdmin($this->currentAdmin())->orderByDesc('id')->get();
         return response()->json([
             'message' => 'Success',
             'data' => $users,
@@ -77,6 +83,8 @@ class ManageUsersController extends Controller
 
     public function addReferral(Request $request)
     {
+        $this->authorizeAdminUserAccess((int) $request->user_id);
+        $this->authorizeAdminUserAccess((int) $request->ref_id);
         $user = User::where('id', $request->user_id)->first();
         $ref = User::where('id', $request->ref_id)->first();
 
@@ -88,6 +96,7 @@ class ManageUsersController extends Controller
 
     public function clearactivity($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         $activities = Activity::where('user', $id)->get();
 
         if (count($activities) > 0) {
@@ -105,6 +114,10 @@ class ManageUsersController extends Controller
     {
         // Get the loan plan
         $plan = User_plans::where('id', $id)->first();
+
+        if ($plan) {
+            $this->authorizeAdminUserAccess((int) $plan->user);
+        }
         
         // Update the loan status
         User_plans::where('id', $id)->update([
@@ -181,6 +194,7 @@ class ManageUsersController extends Controller
 
     public function viewuser($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         $user = User::findOrFail($id);
 
         return view('admin.Users.userdetails', [
@@ -192,6 +206,7 @@ class ManageUsersController extends Controller
     //block user
     public function ublock($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         User::where('id', $id)->update([
             'status' => 'blocked',
         ]);
@@ -200,6 +215,7 @@ class ManageUsersController extends Controller
 
     public function dormant($id)
     {
+    $this->authorizeAdminUserAccess((int) $id);
     User::where('id', $id)->update([
         'account_status' => 'inactive',
     ]);
@@ -209,6 +225,7 @@ class ManageUsersController extends Controller
 
     public function undormant($id)
     {
+    $this->authorizeAdminUserAccess((int) $id);
     User::where('id', $id)->update([
         'account_status' => 'active',
     ]);
@@ -221,6 +238,7 @@ class ManageUsersController extends Controller
     //unblock user
     public function unblock($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         User::where('id', $id)->update([
             'status' => 'active',
         ]);
@@ -230,6 +248,7 @@ class ManageUsersController extends Controller
     //Turn on/off user trade
     public function usertrademode($id, $action)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         if ($action == "on") {
             $action = "on";
         } elseif ($action == "off") {
@@ -247,6 +266,7 @@ class ManageUsersController extends Controller
     //Manually Verify users email
     public function emailverify($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         User::where('id', $id)->update([
             'email_verified_at' => \Carbon\Carbon::now(),
         ]);
@@ -256,6 +276,7 @@ class ManageUsersController extends Controller
     //Reset Password
     public function resetpswd($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         User::where('id', $id)
             ->update([
                 'password' => Hash::make('user01236'),
@@ -266,6 +287,7 @@ class ManageUsersController extends Controller
     //Clear user Account
     public function clearacct(Request $request, $id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         $settings = Settings::where('id', 1)->first();
 
         $deposits = Deposit::where('user', $id)->get();
@@ -294,6 +316,7 @@ class ManageUsersController extends Controller
     public function impersonateUser($id)
     {
         $admin = Auth::guard('admin')->user();
+        $this->authorizeAdminUserAccess((int) $id);
 
         if (!UserImpersonation::adminCanImpersonate($admin)) {
             return redirect()
@@ -353,6 +376,7 @@ class ManageUsersController extends Controller
     //Manually Add Trading History to Users Route
     public function addHistory(Request $request)
     {
+        $this->authorizeAdminUserAccess((int) $request->user_id);
         Tp_Transaction::create([
             'user' => $request->user_id,
             'plan' => $request->plan,
@@ -384,6 +408,7 @@ class ManageUsersController extends Controller
     //Delete user
     public function delsystemuser($id)
     {
+        $this->authorizeAdminUserAccess((int) $id);
         //delete the user's withdrawals and deposits
         $deposits = Deposit::where('user', $id)->get();
         if (!empty($deposits)) {
@@ -424,7 +449,7 @@ class ManageUsersController extends Controller
     //update users info
     public function edituser(Request $request)
     {
-        
+        $this->authorizeAdminUserAccess((int) $request->user_id);
 
         User::where('id', $request['user_id'])
 
@@ -456,6 +481,7 @@ class ManageUsersController extends Controller
     //Send mail to one user
     public function sendmailtooneuser(Request $request)
     {
+        $this->authorizeAdminUserAccess((int) $request->user_id);
 
         $mailduser = User::where('id', $request->user_id)->first();
         Mail::to($mailduser->email)->send(new NewNotification($request->message, $request->subject, $mailduser->name));
@@ -465,17 +491,18 @@ class ManageUsersController extends Controller
     // Send Mail to all users
     public function sendmailtoall(Request $request)
     {
+        $admin = $this->currentAdmin();
 
         if ($request->category == "All") {
-            $users = User::all();
+            $users = User::visibleToAdmin($admin)->get();
         } elseif ($request->category == "No active plans") {
-            $users = User::whereDoesntHave('plans', function (Builder $query) {
+            $users = User::visibleToAdmin($admin)->whereDoesntHave('plans', function (Builder $query) {
                 $query->where('active', '!=', 'yes');
             })->get();
         } elseif ($request->category == "No deposit") {
-            $users = User::doesntHave('dp')->get();
+            $users = User::visibleToAdmin($admin)->doesntHave('dp')->get();
         } elseif ($request->category == "Select Users") {
-            $users = DB::table('users')
+            $users = User::visibleToAdmin($admin)
                 ->whereIn('id', array_column($request->users, null))
                 ->get();
         }
@@ -490,6 +517,10 @@ class ManageUsersController extends Controller
     // Delete User investment Plan
     public function deleteplan($id)
     {
+        $plan = User_plans::where('id', $id)->first();
+        if ($plan) {
+            $this->authorizeAdminUserAccess((int) $plan->user);
+        }
         User_plans::where('id', $id)->delete();
         return redirect()->back()->with('success', 'User Loan deleted successfully!');
     }
@@ -498,6 +529,7 @@ class ManageUsersController extends Controller
        //action 
      public function action(Request $request){
    
+       $this->authorizeAdminUserAccess((int) $request->user_id);
        $user = User::where('id', $request->user_id)->first();
        User::where('id', $request['user_id'])
             ->update([
@@ -513,6 +545,7 @@ class ManageUsersController extends Controller
  //action 
      public function signalaction(Request $request){
    
+       $this->authorizeAdminUserAccess((int) $request->user_id);
        $user = User::where('id', $request->user_id)->first();
        User::where('id', $request['user_id'])
             ->update([
@@ -609,6 +642,7 @@ public function saveuser(Request $request){
  
  function profileimage(Request $request){
     
+    $this->authorizeAdminUserAccess((int) $request->user_id);
     $user = User::where('id', $request->id)->first();
     $this->validate($request, [
         'photo' => 'mimes:jpg,jpeg,png|max:4000|image',

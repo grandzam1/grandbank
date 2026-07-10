@@ -716,7 +716,7 @@
             <div class="logo-container">
                 <div>
                     @if(isset($settings->logo))
-                    <img src="{{ asset('storage/app/public/' . $settings->logo) }}" class="logo" alt="Logo">
+                    <img src="{{ asset('storage/' . $settings->logo) }}" class="logo" alt="Logo">
                     @else
                     <h2 style="margin: 0;">{{ $settings->site_name }}</h2>
                     @endif

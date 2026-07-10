@@ -23,10 +23,10 @@
   <link rel="canonical" href="/">
   <meta property="og:url" content="">
   <meta property="og:site_name" content="{{$settings->site_name}}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap%404.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js%401.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap%404.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 <link rel="stylesheet" href="temp/custom/assets/css/bootstrap.min.css">
 <link rel="stylesheet" href="temp/custom/assets/css/flaticon.css">
@@ -38,9 +38,9 @@
 <link rel="stylesheet" href="temp/custom/assets/css/style.css">
 <link rel="stylesheet" href="temp/custom/assets/css/responsive.css">
 <link rel="stylesheet" href="temp/custom/assets/css/dark-theme.css">
-<link rel="stylesheet" href="{{ asset('public/css/site-branding.css') }}?v={{ @filemtime(public_path('css/site-branding.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/site-branding.css') }}?v={{ @filemtime(public_path('css/site-branding.css')) }}">
 <title>{{$settings->site_name}} - Dedicated to innovating, simplifying, and humanizing digital banking.</title>
-<link rel="icon" type="image/png" href="{{ asset('storage/app/public/'.$settings->favicon)}}">
+<link rel="icon" type="image/png" href="{{ asset('storage/'.$settings->favicon)}}">
 </head>
 <body>
 
@@ -70,8 +70,8 @@
     
 <nav class="navbar navbar-expand-md navbar-light" style="">
 <a class="navbar-brand" href="/">
-<img class="logo-light site-logo" src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="{{ $settings->site_name }}">
-<img class="logo-dark site-logo" src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="{{ $settings->site_name }}">
+<img class="logo-light site-logo" src="{{ asset('storage/'.$settings->logo)}}" alt="{{ $settings->site_name }}">
+<img class="logo-dark site-logo" src="{{ asset('storage/'.$settings->logo)}}" alt="{{ $settings->site_name }}">
 </a>
 
 
@@ -178,7 +178,7 @@ Loans
   <div class="col-xl-3 col-lg-5 col-md-5 col-sm-6">
   <div class="footer-widget">
   <a href="/" class="footer-logo">
-  <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Image" class="site-logo site-logo--footer">
+  <img src="{{ asset('storage/'.$settings->logo)}}" alt="Image" class="site-logo site-logo--footer">
   </a>
   <p class="comp-desc">
   We are now one of the largest digital banking providers, dedicated to innovating, simplifying, and humanizing banking.

@@ -10,7 +10,10 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use App\Models\Settings;
+use App\Models\Admin;
 use Laravel\Sanctum\HasApiTokens;
+use App\Support\AdminUserAccess;
+use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -74,7 +77,7 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
-     * Profile photos are stored in storage/app/public/photos and served
+     * Profile photos are stored in storage/photos and served
      * from the app root (not via site_address / remote domain).
      */
     public function getProfilePhotoUrlAttribute()
@@ -94,7 +97,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $path = 'photos/' . $path;
         }
 
-        return asset('storage/app/public/' . $path);
+        return asset('storage/' . $path);
     }
 
     public function dp(){
@@ -107,6 +110,16 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function tuser(){
     	return $this->belongsTo(Admin::class, 'assign_to');
+    }
+
+    public function assignedAdmin()
+    {
+        return $this->belongsTo(Admin::class, 'assign_to');
+    }
+
+    public function scopeVisibleToAdmin(Builder $query, ?Admin $admin): Builder
+    {
+        return AdminUserAccess::scopeForAdmin($query, $admin);
     }
     
     public function dplan(){

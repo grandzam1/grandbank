@@ -10,7 +10,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $settings->site_name ?? config('app.name', 'GrandBank') }} | {{ $title }}</title>
     @if (!empty($settings?->favicon))
-        <link rel="icon" href="{{ asset('storage/app/public/' . $settings->favicon) }}" type="image/png" />
+        <link rel="icon" href="{{ asset('storage/' . $settings->favicon) }}" type="image/png" />
     @endif
 
     @section('styles')

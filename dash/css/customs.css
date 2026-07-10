@@ -295,9 +295,11 @@ input:checked+.s_slider:before {
 }
 
 /* Admin top bar profile menu */
-.main-header .navbar-header.admin-top-navbar {
-    position: relative;
-    min-height: 56px;
+@media screen and (min-width: 992px) {
+    .main-header .navbar-header.admin-top-navbar {
+        position: relative;
+        min-height: 56px;
+    }
 }
 
 .main-header .navbar-header .admin-top-navbar__inner {
@@ -312,6 +314,61 @@ input:checked+.s_slider:before {
 .main-header .navbar-header.admin-top-navbar #search-nav {
     flex: 0 1 400px;
     max-width: 400px;
+}
+
+@media screen and (max-width: 991px) {
+    .main-header {
+        min-height: 56px;
+    }
+
+    .main-header .logo-header {
+        height: 56px;
+        min-height: 56px;
+        line-height: 56px;
+    }
+
+    /* Single-row header: profile overlays the logo bar instead of stacking a second white card */
+    .main-header .navbar-header.admin-top-navbar {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        min-height: 56px;
+        transform: none !important;
+        background: transparent !important;
+        border-top: 0 !important;
+        box-shadow: none !important;
+        z-index: 1002;
+        pointer-events: none;
+    }
+
+    .main-header .navbar-header .admin-top-navbar__inner {
+        min-height: 56px;
+        padding-right: 12px;
+        justify-content: flex-end;
+        pointer-events: none;
+    }
+
+    .main-header .navbar-header.admin-top-navbar #search-nav {
+        display: none !important;
+    }
+
+    .main-header .navbar-header .admin-profile-slot {
+        position: relative;
+        top: auto;
+        right: auto;
+        transform: none;
+        pointer-events: auto;
+    }
+
+    .main-header .logo-header .admin-brand-logo {
+        font-size: 13px !important;
+        max-width: calc(100% - 110px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 .admin-brand-logo {

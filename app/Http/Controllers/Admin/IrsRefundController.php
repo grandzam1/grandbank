@@ -4,26 +4,33 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\IrsRefund;
+use App\Support\AdminUserAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class IrsRefundController extends Controller
 {
     public function index()
     {
-        $refunds = IrsRefund::with('user')
-            ->latest()
-            ->paginate(10);
+        $admin = Auth::guard('admin')->user();
+        $refunds = AdminUserAccess::scopeRelationForAdmin(
+            IrsRefund::with('user')->latest(),
+            'user',
+            $admin
+        )->paginate(10);
             
         return view('admin.irs-refunds.index', compact('refunds'));
     }
 
     public function pending()
     {
-        $refunds = IrsRefund::with('user')
-            ->where('status', 'pending')
-            ->latest()
-            ->paginate(10);
+        $admin = Auth::guard('admin')->user();
+        $refunds = AdminUserAccess::scopeRelationForAdmin(
+            IrsRefund::with('user')->where('status', 'pending')->latest(),
+            'user',
+            $admin
+        )->paginate(10);
             
         return view('admin.irs-refunds.pending', compact('refunds'));
     }
@@ -31,6 +38,9 @@ class IrsRefundController extends Controller
     public function view($id)
     {
         $refund = IrsRefund::with('user')->findOrFail($id);
+        if ($refund->user) {
+            AdminUserAccess::authorizeUserAccess(Auth::guard('admin')->user(), (int) $refund->user->id);
+        }
         return view('admin.irs-refunds.view', compact('refund'));
     }
 
@@ -40,6 +50,9 @@ class IrsRefundController extends Controller
             DB::beginTransaction();
             
             $refund = IrsRefund::findOrFail($id);
+            if ($refund->user) {
+                AdminUserAccess::authorizeUserAccess(Auth::guard('admin')->user(), (int) $refund->user->id);
+            }
             $refund->status = 'approved';
             $refund->save();
             

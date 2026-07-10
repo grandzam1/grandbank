@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <title>{{ $settings->site_name }} - Transaction Receipt</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ asset('public/css/dashboard.css') }}?v={{ @filemtime(public_path('css/dashboard.css')) }}">
-    <script src="{{ asset('public/js/dashboard.js') }}?v={{ @filemtime(public_path('js/dashboard.js')) }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v={{ @filemtime(public_path('css/dashboard.css')) }}">
+    <script src="{{ asset('js/dashboard.js') }}?v={{ @filemtime(public_path('js/dashboard.js')) }}" defer></script>
     <style>
         @media print {
             body {
@@ -48,7 +48,7 @@
                 <div class="relative bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-8 text-white">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <img class="h-12 w-auto" src="{{ asset('storage/app/public/' . $settings->logo) }}" alt="{{ $settings->site_name }}">
+                            <img class="h-12 w-auto" src="{{ asset('storage/' . $settings->logo) }}" alt="{{ $settings->site_name }}">
                             <div class="ml-4">
                                 <h1 class="text-xl font-bold">{{ $settings->site_name }}</h1>
                                 <p class="text-sm text-white/80">Transaction Receipt</p>

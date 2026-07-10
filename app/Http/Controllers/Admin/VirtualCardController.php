@@ -10,13 +10,20 @@ use App\Models\User;
 use App\Models\Settings;
 use App\Helpers\NotificationHelper;
 use App\Models\CardSettings;
+use App\Support\AdminUserAccess;
+use Illuminate\Support\Facades\Auth;
 
 class VirtualCardController extends Controller
 {
     // Display all cards 
     public function index()
     {
-        $cards = Card::with('user')->latest()->paginate(20);
+        $admin = Auth::guard('admin')->user();
+        $cards = AdminUserAccess::scopeRelationForAdmin(
+            Card::with('user')->latest(),
+            'user',
+            $admin
+        )->paginate(20);
         return view('admin.cards.index', [
             'title' => 'Manage Virtual Cards',
             'cards' => $cards,
@@ -27,7 +34,12 @@ class VirtualCardController extends Controller
     // Display pending card applications
     public function pending()
     {
-        $cards = Card::with('user')->where('status', 'pending')->latest()->paginate(20);
+        $admin = Auth::guard('admin')->user();
+        $cards = AdminUserAccess::scopeRelationForAdmin(
+            Card::with('user')->where('status', 'pending')->latest(),
+            'user',
+            $admin
+        )->paginate(20);
         return view('admin.cards.pending', [
             'title' => 'Pending Card Applications',
             'cards' => $cards,
@@ -39,6 +51,9 @@ class VirtualCardController extends Controller
     public function viewCard($id)
     {
         $card = Card::with('user')->findOrFail($id);
+        if ($card->user_id) {
+            AdminUserAccess::authorizeUserAccess(Auth::guard('admin')->user(), (int) $card->user_id);
+        }
         $transactions = CardTransaction::where('card_id', $id)->latest()->paginate(10);
         
         return view('admin.cards.view', [
@@ -53,6 +68,9 @@ class VirtualCardController extends Controller
     public function approveCard($id)
     {
         $card = Card::findOrFail($id);
+        if ($card->user_id) {
+            AdminUserAccess::authorizeUserAccess(Auth::guard('admin')->user(), (int) $card->user_id);
+        }
         $user = User::findOrFail($card->user_id);
         
         // Generate card details based on card type
