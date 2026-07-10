@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Settings;
 use App\Models\Admin;
+use App\Support\AdminAuth;
+use App\Support\UserImpersonation;
+use App\Mail\Twofa;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Mail\NewNotification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class ManageAdminController extends Controller
 {
@@ -34,12 +39,40 @@ class ManageAdminController extends Controller
 
     //Reset Password
     public function resetadpwd($id){
-        Admin::where('id', $id)
-        ->update([
-            'password' => Hash::make('admin01236'),
+        $target = Admin::findOrFail($id);
+
+        if (AdminAuth::isRootAdmin($target)) {
+            return redirect()->back()->with('message', 'Cannot reset root Super Admin password from this panel.');
+        }
+
+        $plainPassword = Str::random(12);
+
+        Admin::where('id', $target->id)->update([
+            'password' => Hash::make($plainPassword),
         ]);
-        return redirect()->back()   ->with('success', 'Password reset Successful.');
-    } 
+
+        $message = "Your admin account password was reset by an administrator.\n\n"
+            ."New temporary password: {$plainPassword}\n\n"
+            ."Please log in and change your password from Account Profile.";
+
+        try {
+            Mail::to($target->email)->send(new NewNotification(
+                $message,
+                'Your admin password was reset',
+                $target->firstName
+            ));
+
+            return redirect()->back()->with(
+                'success',
+                "Password reset for {$target->firstName}. A new temporary password was emailed to {$target->email}."
+            );
+        } catch (\Throwable $e) {
+            return redirect()->back()->with(
+                'success',
+                "Password reset for {$target->firstName}. Email could not be sent — share this temporary password securely: {$plainPassword}"
+            );
+        }
+    }
 
     public function deleteadminacnt($id){
         Admin::where('id', $id)->delete();
@@ -87,7 +120,7 @@ class ManageAdminController extends Controller
             'password' => 'min:8',
         ]);
 
-        Admin::where('id', $request['id'])
+        Admin::where('id', Auth('admin')->User()->id)
         ->update([
             'password' => Hash::make($request['password']),
         ]);
@@ -137,15 +170,128 @@ class ManageAdminController extends Controller
     }
 
     public function updateadminprofile(Request $request){
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'lname' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'enable_2fa' => 'required|in:enabled,disabled',
+        ]);
+
         Admin::where('id', Auth('admin')->User()->id)
         ->update([
           'firstName' => $request->name,
           'lastName' => $request->lname,
           'phone' => $request->phone,
-          'enable_2fa' => $request->token,
+          'enable_2fa' => $request->enable_2fa,
         ]);
         return redirect()->back()
         ->with('success', "Action successful!.");
+    }
+
+    public function toggleAdminTwoFactor(Request $request, Admin $admin)
+    {
+        $request->validate([
+            'enable_2fa' => 'required|in:enabled,disabled',
+        ]);
+
+        if (AdminAuth::isRootAdmin($admin)) {
+            return back()->with('message', 'Cannot change root Super Admin 2FA from this panel.');
+        }
+
+        $admin->update([
+            'enable_2fa' => $request->enable_2fa,
+            'token_2fa' => null,
+        ]);
+
+        return back()->with('success', '2FA setting updated for '.$admin->email);
+    }
+
+    public function resetAdminTwoFactor(Admin $admin)
+    {
+        if (AdminAuth::isRootAdmin($admin)) {
+            return back()->with('message', 'Cannot reset root Super Admin 2FA from this panel.');
+        }
+
+        $admin->update([
+            'token_2fa' => null,
+        ]);
+
+        return back()->with('success', '2FA lock reset for '.$admin->email);
+    }
+
+    public function resendAdminTwoFactor(Admin $admin)
+    {
+        if (AdminAuth::isRootAdmin($admin)) {
+            return back()->with('message', 'Cannot resend root Super Admin 2FA from this panel.');
+        }
+
+        if (AdminAuth::normalizeTwoFactorStatus($admin->enable_2fa) !== 'enabled') {
+            return back()->with('message', '2FA is not enabled for '.$admin->email);
+        }
+
+        $rateLimitKey = 'admin-2fa-resend:'.$admin->id;
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
+            return back()->with('message', 'Too many OTP resend attempts. Try again later.');
+        }
+
+        RateLimiter::hit($rateLimitKey, 3600);
+
+        $token = (string) mt_rand(10000, 99999);
+        $admin->update(['token_2fa' => $token]);
+
+        $settings = Settings::where('id', 1)->first();
+        $objDemo = new \stdClass();
+        $objDemo->message = $token;
+        $objDemo->sender = $settings ? $settings->site_name : config('app.name');
+        $objDemo->subject = 'Two Factor Code';
+        $objDemo->date = \Carbon\Carbon::now();
+
+        Mail::bcc($admin->email)->send(new Twofa($objDemo));
+
+        return back()->with('success', 'A new 2FA code was sent to '.$admin->email);
+    }
+
+    public function updateStaffImpersonationPolicy(Request $request)
+    {
+        $request->validate([
+            'allow_staff_user_impersonation' => 'required|in:0,1',
+        ]);
+
+        $enabled = $request->input('allow_staff_user_impersonation') === '1';
+
+        Settings::where('id', 1)->update([
+            'allow_staff_user_impersonation' => $enabled,
+        ]);
+
+        $status = $enabled ? 'enabled' : 'disabled';
+
+        return back()->with(
+            'success',
+            "Staff customer login has been {$status}. Super Admins can always log in as customers."
+        );
+    }
+
+    public function toggleStaffImpersonation(Request $request, Admin $admin)
+    {
+        if (UserImpersonation::isSuperAdmin($admin)) {
+            return back()->with('message', 'Super Admin accounts always have customer login access. This setting applies to staff only.');
+        }
+
+        $request->validate([
+            'can_impersonate_users' => 'required|in:0,1',
+        ]);
+
+        $allowed = $request->input('can_impersonate_users') === '1';
+
+        $admin->update([
+            'can_impersonate_users' => $allowed,
+        ]);
+
+        $name = trim($admin->firstName.' '.$admin->lastName);
+        $status = $allowed ? 'granted' : 'revoked';
+
+        return back()->with('success', "Customer login permission {$status} for {$name}.");
     }
 
 

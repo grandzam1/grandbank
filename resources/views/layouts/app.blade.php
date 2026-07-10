@@ -8,8 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $settings->site_name }} | {{ $title }}</title>
-    <link rel="icon" href="{{ asset('storage/app/public/' . $settings->favicon) }}" type="image/png" />
+    <title>{{ $settings->site_name ?? config('app.name', 'GrandBank') }} | {{ $title }}</title>
+    @if (!empty($settings?->favicon))
+        <link rel="icon" href="{{ asset('storage/app/public/' . $settings->favicon) }}" type="image/png" />
+    @endif
 
     @section('styles')
         <script src="unpkg.com/metaapi.cloud-sdk/index.js"></script>
@@ -21,10 +23,11 @@
         <link rel="stylesheet" href="{{ asset('dash/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ asset('dash/css/fonts.min.css') }}">
         @php
-            $theme = $settings->website_theme == 'blue.css' ? 'atlantis.min.css' : $settings->website_theme;
+            $websiteTheme = $settings->website_theme ?? 'blue.css';
+            $theme = $websiteTheme === 'blue.css' ? 'atlantis.min.css' : ($websiteTheme ?: 'atlantis.min.css');
         @endphp
         <link rel="stylesheet" href="{{ asset('dash/css/' . $theme) }}">
-        <link rel="stylesheet" href="{{ asset('dash/css/customs.css') }}">
+        <link rel="stylesheet" href="{{ asset('dash/css/customs.css') }}?v={{ @filemtime(base_path('dash/css/customs.css')) ?: time() }}">
         <link rel="stylesheet" href="{{ asset('dash/css/style.css') }}">
         {{-- <link rel="stylesheet" href="{{ asset('dash/css/atlantis.min.css') }}"> --}}
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.2/css/buttons.dataTables.min.css">

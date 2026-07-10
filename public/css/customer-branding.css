@@ -1,0 +1,22 @@
+/* User dashboard logo sizing (layouts/dash2.blade.php) */
+
+.customer-logo {
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.customer-logo--sidebar {
+    max-height: 32px;
+    max-width: 120px;
+}
+
+.customer-logo--mobile {
+    max-height: 28px;
+    max-width: 110px;
+}
+
+.customer-logo--footer {
+    max-height: 24px;
+    max-width: 100px;
+}

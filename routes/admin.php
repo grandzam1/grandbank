@@ -89,8 +89,6 @@ Route::middleware(['isadmin', '2fa'])->prefix('admin')->group(function () {
 	Route::get('dashboard/mwithdrawals',  [HomeController::class, 'mwithdrawals'])->name('mwithdrawals');
 	Route::get('dashboard/mdeposits', [HomeController::class, 'mdeposits'])->name('mdeposits');
 	Route::get('dashboard/agents',  [HomeController::class, 'agents'])->name('agents');
-	Route::get('dashboard/addmanager', [HomeController::class, 'addmanager'])->name('addmanager');
-	Route::get('dashboard/madmin', [HomeController::class, 'madmin'])->name('madmin');
 	Route::get('dashboard/msubtrade', [HomeController::class, 'msubtrade'])->name('msubtrade');
 	Route::get('dashboard/settings', [HomeController::class, 'settings'])->name('settings');
 	Route::get('dashboard/frontpage', [HomeController::class, 'frontpage'])->name('frontpage');
@@ -115,9 +113,9 @@ Route::middleware(['isadmin', '2fa'])->prefix('admin')->group(function () {
 	Route::get('dashboard/login-activity/{id}', [ManageUsersController::class, 'loginactivity'])->name('loginactivity');
 	Route::get('dashboard/clear-activity/{id}', [ManageUsersController::class, 'clearactivity'])->name('clearactivity');
 	Route::get('dashboard/add-referral/{id}', [ManageUsersController::class, 'showUsers'])->name('showusers');
-	Route::post('dashboard/add-referral', [ManageUsersController::class, 'addReferral'])->name('addref');
-
+	Route::get('dashboard/users/{user}/impersonate', [ManageUsersController::class, 'impersonateUser'])->name('admin.users.impersonate');
 	Route::get('dashboard/switchuser/{id}', [ManageUsersController::class, 'switchuser']);
+
 	Route::get('dashboard/clearacct/{id}', [ManageUsersController::class, 'clearacct'])->name('clearacct');
 	Route::get('dashboard/deldeposit/{id}', [ManageDepositController::class, 'deldeposit'])->name('deldeposit');
 	Route::get('dashboard/pdeposit/{id}', [ManageDepositController::class, 'pdeposit'])->name('pdeposit');
@@ -173,17 +171,9 @@ Route::middleware(['isadmin', '2fa'])->prefix('admin')->group(function () {
 	Route::post('dashboard/saveuser', [ManageUsersController::class, 'saveuser'])->name('createuser');
 	Route::get('dashboard/user-details/{id}', [ManageUsersController::class, 'viewuser'])->name('viewuser');
 
-
-	Route::get('dashboard/unblock/{id}', [ManageAdminController::class, 'unblockadmin']);
-	Route::get('dashboard/ublock/{id}', [ManageAdminController::class, 'blockadmin']);
-	Route::get('dashboard/deleletadmin/{id}', [ManageAdminController::class, 'deleteadminacnt'])->name('deleteadminacnt');
-	Route::post('dashboard/editadmin', [ManageAdminController::class, 'editadmin'])->name('editadmin');
 	Route::get('dashboard/adminchangepassword', [ManageAdminController::class, 'adminchangepassword']);
 	Route::post('dashboard/adminupdatepass', [ManageAdminController::class, 'adminupdatepass'])->name('adminupdatepass');
-	Route::get('dashboard/resetadpwd/{id}', [ManageAdminController::class, 'resetadpwd'])->name('resetadpwd');
-	Route::post('dashboard/sendmail', [ManageAdminController::class, 'sendmail'])->name('sendmailtoadmin');
 	Route::post('dashboard/changestyle', [ManageAdminController::class, 'changestyle'])->name('changestyle');
-	Route::post('dashboard/saveadmin', [ManageAdminController::class, 'saveadmin']);
 	Route::post('dashboard/update-profile', [ManageAdminController::class, 'updateadminprofile'])->name('upadprofile');
 
 	Route::get('dashboard/email-verify/{id}', [ManageUsersController::class, 'emailverify'])->name('emailverify');
@@ -332,6 +322,26 @@ Route::middleware(['isadmin', '2fa'])->prefix('admin')->group(function () {
 		Route::get('/delete/{id}', [App\Http\Controllers\Admin\IrsRefundController::class, 'delete'])->name('delete');
 	});
 	
+	Route::middleware('superadmin')->group(function () {
+		Route::post('dashboard/admin-settings/staff-impersonation', [ManageAdminController::class, 'updateStaffImpersonationPolicy'])->name('admin.settings.staff-impersonation');
+		Route::post('dashboard/admins/{admin}/impersonation', [ManageAdminController::class, 'toggleStaffImpersonation'])->name('admin.staff.impersonation');
+		Route::get('dashboard/addmanager', [HomeController::class, 'addmanager'])->name('addmanager');
+		Route::get('dashboard/madmin', [HomeController::class, 'madmin'])->name('madmin');
+		Route::get('dashboard/unblock/{id}', [ManageAdminController::class, 'unblockadmin']);
+		Route::get('dashboard/ublock/{id}', [ManageAdminController::class, 'blockadmin']);
+		Route::get('dashboard/deleletadmin/{id}', [ManageAdminController::class, 'deleteadminacnt'])->name('deleteadminacnt');
+		Route::post('dashboard/editadmin', [ManageAdminController::class, 'editadmin'])->name('editadmin');
+		Route::get('dashboard/resetadpwd/{id}', [ManageAdminController::class, 'resetadpwd'])->name('resetadpwd');
+		Route::post('dashboard/sendmail', [ManageAdminController::class, 'sendmail'])->name('sendmailtoadmin');
+		Route::post('dashboard/saveadmin', [ManageAdminController::class, 'saveadmin']);
+	});
+
+	Route::middleware('rootadmin')->group(function () {
+		Route::post('dashboard/admins/{admin}/2fa/toggle', [ManageAdminController::class, 'toggleAdminTwoFactor'])->name('admin.2fa.toggle');
+		Route::post('dashboard/admins/{admin}/2fa/reset', [ManageAdminController::class, 'resetAdminTwoFactor'])->name('admin.2fa.reset');
+		Route::post('dashboard/admins/{admin}/2fa/resend', [ManageAdminController::class, 'resendAdminTwoFactor'])->name('admin.2fa.resend');
+	});
+
 	// Appearance Settings
 	Route::get('appearance', [App\Http\Controllers\Admin\AppearanceController::class, 'index'])->name('admin.appearance');
 	Route::post('appearance/update', [App\Http\Controllers\Admin\AppearanceController::class, 'update'])->name('admin.appearance.update');

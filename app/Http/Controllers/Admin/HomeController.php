@@ -320,9 +320,8 @@ class HomeController extends Controller
     {
         return view('admin.madmin')->with(array(
             'admins' => Admin::orderby('id', 'desc')->get(),
-            'title' => 'Add new manager',
-
-
+            'settings' => Settings::find(1),
+            'title' => 'Managers List',
         ));
     }
 

@@ -1,0 +1,21 @@
+/* Public website logo sizing (layouts/base.blade.php) */
+
+.site-logo {
+    width: auto;
+    height: auto;
+    max-height: 42px;
+    max-width: 140px;
+    object-fit: contain;
+}
+
+.site-logo--footer {
+    max-height: 34px;
+    max-width: 120px;
+}
+
+.header-wrap .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}

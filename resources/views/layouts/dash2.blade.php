@@ -40,6 +40,7 @@
     <!-- Local dashboard assets (Mix: Tailwind + Alpine + Lucide + dark mode) -->
     {{-- App is served from project root (not /public), so include public/ in the URL --}}
     <link rel="stylesheet" href="{{ asset('public/css/dashboard.css') }}?v={{ @filemtime(public_path('css/dashboard.css')) }}">
+    <link rel="stylesheet" href="{{ asset('public/css/customer-branding.css') }}?v={{ @filemtime(public_path('css/customer-branding.css')) }}">
     <script src="{{ asset('public/js/dashboard.js') }}?v={{ @filemtime(public_path('js/dashboard.js')) }}" defer></script>
     
     @if(isset($appearanceSettings) && $appearanceSettings->custom_css)
@@ -61,6 +62,7 @@
 </head>
 
 <body class="bg-gray-50">
+    <x-impersonation-banner />
     <!-- Modern Page Loader -->
     <div class="page-loading active">
         <div class="page-loading-inner">
@@ -85,7 +87,7 @@
                 <!-- Logo -->
                 <div class="flex items-center justify-center flex-shrink-0 px-4 mb-6">
                     <a href="/" class="flex items-center">
-                        <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Logo" class="h-10 w-auto">
+                        <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Logo" class="customer-logo customer-logo--sidebar">
                     </a>
                 </div>
                 
@@ -253,7 +255,7 @@
                             <i data-lucide="menu" class="h-6 w-6"></i>
                         </button>
                         <a href="/" class="ml-4">
-                            <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Logo" class="h-8 w-auto">
+                            <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Logo" class="customer-logo customer-logo--mobile">
                         </a>
                     </div>
                     
@@ -689,7 +691,7 @@
             <footer class="bg-white border-t border-gray-200 hidden md:block">
                 <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 md:flex md:items-center md:justify-between">
                     <div class="flex items-center">
-                        <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Logo" class="h-6 w-auto mr-2">
+                        <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Logo" class="customer-logo customer-logo--footer mr-2">
                         <p class="text-sm text-gray-500">© {{ date('Y') }} {{ $settings->site_name }}. All rights reserved.</p>
                     </div>
                     <div class="flex space-x-6 mt-4 md:mt-0">

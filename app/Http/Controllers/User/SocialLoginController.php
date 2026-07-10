@@ -84,9 +84,7 @@ class SocialLoginController extends Controller
                 'username' => $username,
                 'password' => Hash::make($password),
             ]);
-            $cryptoaccnt = new CryptoAccount();
-            $cryptoaccnt->user_id = $newUser->id;
-            $cryptoaccnt->save();
+            CryptoAccount::ensureForUser($newUser->id);
 
             Auth::login($newUser);
             $objDemo = new \stdClass();

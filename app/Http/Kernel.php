@@ -70,5 +70,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'complete.kyc' => \App\Http\Middleware\EnsureKycIsCompleted::class,
+        'superadmin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        'rootadmin' => \App\Http\Middleware\EnsureRootSuperAdmin::class,
     ];
 }

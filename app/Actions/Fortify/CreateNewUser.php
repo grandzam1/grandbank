@@ -81,9 +81,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => Hash::make($input['password']),
         ]);
 
-        $cryptoaccnt = new CryptoAccount();
-        $cryptoaccnt->user_id = $user->id;
-        $cryptoaccnt->save();
+        CryptoAccount::ensureForUser($user->id);
         $request->session()->forget('ref_by');
         Mail::to($user->email)->send(new WelcomeEmail($user));
 

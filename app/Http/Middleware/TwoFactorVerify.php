@@ -1,28 +1,34 @@
 <?php
 namespace App\Http\Middleware;
+
+use App\Models\Admin;
+use App\Support\AdminAuth;
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Admin;
 
 class TwoFactorVerify
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle($request, Closure $next)
-    {   
-        $logg = Auth::guard('admin')->user();
-        $user = Admin::where('email',$logg->email)->first();
-        
-        if($user->enable_2fa == "enabled" && $user->token_2fa_expiry < \Carbon\Carbon::now() &&             ($user->pass_2fa == "false" || $user->pass_2fa == NULL)){
-            return redirect('/admin/2fa');  
+    {
+        $admin = Auth::guard('admin')->user();
+
+        if (!$admin) {
+            return redirect()->route('adminloginform');
         }
-        else{
-            return $next($request);
+
+        $fresh = Admin::query()->find($admin->id);
+
+        if (!$fresh) {
+            Auth::guard('admin')->logout();
+
+            return redirect()->route('adminloginform');
         }
+
+        if (AdminAuth::normalizeTwoFactorStatus($fresh->enable_2fa) === 'enabled'
+            && !AdminAuth::twoFactorPassed($fresh)) {
+            return redirect('/admin/2fa');
+        }
+
+        return $next($request);
     }
 }

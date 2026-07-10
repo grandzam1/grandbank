@@ -36,9 +36,7 @@ class ApiAuthController extends Controller
             'password' => Hash::make($request['password']),
         ]);
 
-        $cryptoaccnt = new CryptoAccount();
-        $cryptoaccnt->user_id = $user->id;
-        $cryptoaccnt->save();
+        CryptoAccount::ensureForUser($user->id);
 
         Mail::to($user->email)->send(new WelcomeEmail($user));
 

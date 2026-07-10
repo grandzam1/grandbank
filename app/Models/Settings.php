@@ -12,7 +12,8 @@ class Settings extends Model
     protected $casts = [
         'return_capital' => 'boolean',
         'should_cancel_plan' => 'boolean',
-        'modules' => 'array'
+        'modules' => 'array',
+        'allow_staff_user_impersonation' => 'boolean',
     ];
 
     // public function getModulesAttribute($value)

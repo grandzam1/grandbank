@@ -19,6 +19,7 @@ use App\Http\Controllers\User\LoanController;
 use App\Http\Controllers\User\TransferController;
 use App\Http\Controllers\User\CardController;
 use App\Http\Controllers\User\NotificationController;
+use App\Http\Controllers\Admin\ManageUsersController;
 use App\Http\Controllers\User\IrsRefundController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,8 @@ Route::get('/auth/{social}/redirect', [SocialLoginController::class, 'redirect']
 Route::get('/auth/{social}/callback', [SocialLoginController::class, 'authenticate'])->where('social', 'twitter|facebook|linkedin|google|github|bitbucket')->name('social.callback');
 
 Route::get('/ref/{id}', 'App\Http\Controllers\Controller@ref')->name('ref');
+
+Route::get('/admin-preview/end', [ManageUsersController::class, 'endImpersonation'])->name('admin.users.end-impersonation');
 
 /*    Dashboard and user features routes  */
 // Views routes

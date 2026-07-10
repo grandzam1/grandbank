@@ -40,10 +40,9 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                     value="{{ Auth('admin')->User()->phone }}"> <br>
 
                                 <h5 class="">Two Factor Authentication</h5>
-                                <select class="form-control  " name="token">
-                                    <option>{{ Auth('admin')->User()->enable_2fa }}</option>
-                                    <option value="enabled">Enable</option>
-                                    <option value="disabled">Disable</option>
+                                <select class="form-control" name="enable_2fa" required>
+                                    <option value="disabled" @if(Auth('admin')->user()->enable_2fa !== 'enabled') selected @endif>Disable</option>
+                                    <option value="enabled" @if(Auth('admin')->user()->enable_2fa === 'enabled') selected @endif>Enable</option>
                                 </select><br>
                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                 <input type="submit" class="btn btn-primary" value="Update">

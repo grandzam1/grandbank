@@ -22,7 +22,8 @@ use App\Models\Withdrawal;
 use App\Models\Cp_transaction;
 use App\Models\Tp_Transaction;
 use App\Models\Activity;
-use App\Models\Notification;
+use App\Models\CryptoAccount;
+use App\Support\UserImpersonation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -42,12 +43,11 @@ class ManageUsersController extends Controller
     // See user wallet balances
     public function loginactivity($id)
     {
-
-        $user = User::where('id', $id)->first();
+        $user = User::findOrFail($id);
 
         return view('admin.Users.loginactivity', [
             'activities' => Activity::where('user', $id)->orderByDesc('id')->get(),
-            'title' => "$user->name login activities",
+            'title' => "{$user->name} login activities",
             'user' => $user,
         ]);
     }
@@ -181,11 +181,12 @@ class ManageUsersController extends Controller
 
     public function viewuser($id)
     {
-        $user = User::where('id', $id)->first();
+        $user = User::findOrFail($id);
+
         return view('admin.Users.userdetails', [
             'user' => $user,
             'pl' => Plans::orderByDesc('id')->get(),
-            'title' => "Manage $user->name",
+            'title' => "Manage {$user->name}",
         ]);
     }
     //block user
@@ -290,12 +291,63 @@ class ManageUsersController extends Controller
         return redirect()->back()->with('success', "Account cleared to $settings->currency 0.00");
     }
 
-    //Access users account
+    public function impersonateUser($id)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        if (!UserImpersonation::adminCanImpersonate($admin)) {
+            return redirect()
+                ->back()
+                ->with('message', UserImpersonation::denialMessage($admin));
+        }
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return redirect()
+                ->route('manageusers')
+                ->with('message', 'Customer account not found. It may have been deleted.');
+        }
+
+        if ($user->status === 'blocked') {
+            return redirect()
+                ->back()
+                ->with('message', "Cannot log in as {$user->name} because this customer account is blocked.");
+        }
+
+        UserImpersonation::markSession($admin);
+        Auth::guard('web')->loginUsingId($user->id, true);
+        CryptoAccount::ensureForUser($user->id);
+
+        return redirect()
+            ->route('dashboard')
+            ->with('success', "You are now viewing the customer dashboard as {$user->name}. Log out to return to admin.");
+    }
+
+    /** @deprecated Use impersonateUser() — kept for old bookmarks */
     public function switchuser($id)
     {
-        $user = User::where('id', $id)->first();
-        Auth::loginUsingId($user->id, true);
-        return redirect()->route('dashboard')->with('success', "You are logged in as $user->name !");
+        return $this->impersonateUser($id);
+    }
+
+    public function endImpersonation()
+    {
+        if (!UserImpersonation::impersonatorAdminId()) {
+            return redirect()->route('dashboard');
+        }
+
+        Auth::guard('web')->logout();
+        UserImpersonation::clearSession();
+
+        if (Auth::guard('admin')->check()) {
+            return redirect()
+                ->route('manageusers')
+                ->with('success', 'Customer preview ended. You are back on the admin dashboard.');
+        }
+
+        return redirect()
+            ->route('adminlogin')
+            ->with('message', 'Customer preview ended. Please sign in to the admin dashboard again.');
     }
 
     //Manually Add Trading History to Users Route

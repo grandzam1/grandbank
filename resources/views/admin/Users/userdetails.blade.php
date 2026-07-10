@@ -77,10 +77,12 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                                         data-target="#sendmailtooneuserModal" class="dropdown-item">Send
                                                         Email</a>
 
-                                                    <a href="#" data-toggle="modal" data-target="#switchuserModal"
-                                                        class="dropdown-item text-success">Login as {{ $user->name }}</a>
+                                                    @if (\App\Support\UserImpersonation::adminCanImpersonate(Auth('admin')->user()))
+                                                    <a href="#" data-toggle="modal" data-target="#impersonateUserModal"
+                                                        class="dropdown-item text-success">Log in as customer</a>
+                                                    @endif
                                                         <a class="dropdown-item"
-                                                        href="{{ route('loginactivity', $user->id) }}">Login Activity</a>
+                                                        href="{{ route('loginactivity', ['id' => $user->id]) }}">Login Activity</a>
                                                     @if ($user->status == null || $user->status == 'blocked')
                                                         <a class="dropdown-item"
                                                             href="{{ url('admin/dashboard/uunblock') }}/{{ $user->id }}">Unblock</a>

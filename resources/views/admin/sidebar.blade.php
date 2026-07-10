@@ -4,18 +4,6 @@
 <div class="sidebar sidebar-style-2" data-background-color="{{ Auth('admin')->User()->dashboard_style }}">
     <div class="sidebar-wrapper scrollbar scrollbar-inner">
         <div class="sidebar-content">
-            <div class="user">
-                <div class="info">
-                    <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
-                        <span>
-                            {{ Auth('admin')->User()->firstName }} {{ Auth('admin')->User()->lastName }}
-                            <span class="user-level"> Admin</span>
-                            {{-- <span class="caret"></span> --}}
-                        </span>
-                    </a>
-                </div>
-            </div>
-
             <ul class="nav nav-primary">
                 <li class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <a href="{{ url('/admin/dashboard') }}">
@@ -364,7 +352,6 @@
                    
         
             </ul>
-Success!
         </div>
     </div>
 </div>

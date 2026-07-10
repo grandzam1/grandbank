@@ -55,9 +55,7 @@ class ViewsController extends Controller
         }
 
         if (DB::table('crypto_accounts')->where('user_id', Auth::user()->id)->doesntExist()) {
-            $cryptoaccnt = new CryptoAccount();
-            $cryptoaccnt->user_id = Auth::user()->id;
-            $cryptoaccnt->save();
+            CryptoAccount::ensureForUser(Auth::user()->id);
         }
 
         //sum total deposited

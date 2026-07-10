@@ -18,6 +18,38 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                 <x-danger-alert />
                 <x-success-alert />
 
+                @if (\App\Support\AdminAuth::isRootAdmin(Auth('admin')->user()))
+                    <div class="alert alert-info">
+                        As Root Super Admin, you can manage two-factor authentication for all other staff accounts
+                        below. Recovery actions help when an admin is locked out or cannot receive their email OTP.
+                    </div>
+                @endif
+
+                @if (Auth('admin')->User()->type === 'Super Admin')
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-2">Staff customer login</h5>
+                            <p class="text-muted small mb-3">
+                                Super Admins can always log in as customers from Manage Users.
+                                Use this switch to allow or block non–Super Admin staff from doing the same.
+                                Individual staff still need the <strong>Customer login</strong> permission below.
+                            </p>
+                            <form method="post" action="{{ route('admin.settings.staff-impersonation') }}" class="form-inline">
+                                @csrf
+                                <select name="allow_staff_user_impersonation" class="form-control mr-2" required>
+                                    <option value="1" @if ($settings && $settings->allow_staff_user_impersonation) selected @endif>
+                                        Allow staff customer login
+                                    </option>
+                                    <option value="0" @if (!$settings || !$settings->allow_staff_user_impersonation) selected @endif>
+                                        Block staff customer login
+                                    </option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Save policy</button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="mb-5 row">
                     <div class="col p-4 shadow card ">
                         <div class="table-responsive" data-example-id="hoverable-table">
@@ -31,6 +63,8 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                         <th>PHONE</th>
                                         <th>TYPE</th>
                                         <th>STATUS</th>
+                                        <th>2FA</th>
+                                        <th>CUSTOMER LOGIN</th>
                                         <th>ACTION</th>
                                     </tr>
                                 </thead>
@@ -44,6 +78,24 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                             <td>{{ $admin->phone }}</td>
                                             <td>{{ $admin->type }}</td>
                                             <td>{{ $admin->acnt_type_active }}</td>
+                                            <td>
+                                                @if ($admin->enable_2fa === 'enabled')
+                                                    <span class="badge badge-success">Enabled</span>
+                                                @else
+                                                    <span class="badge badge-secondary">Disabled</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($admin->type === 'Super Admin')
+                                                    <span class="badge badge-primary">Always allowed</span>
+                                                @elseif ($admin->can_impersonate_users && $settings && $settings->allow_staff_user_impersonation)
+                                                    <span class="badge badge-success">Allowed</span>
+                                                @elseif ($admin->can_impersonate_users)
+                                                    <span class="badge badge-warning">Granted (policy off)</span>
+                                                @else
+                                                    <span class="badge badge-secondary">Not allowed</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <div class="dropdown">
                                                     <a class="btn btn-secondary btn-sm dropdown-toggle" href="#"
@@ -73,6 +125,16 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                                         <a href="#" data-toggle="modal"
                                                             data-target="#sendmailModal{{ $admin->id }}"
                                                             class="m-1 btn btn-info btn-sm">Send Email</a>
+                                                        @if (\App\Support\AdminAuth::isRootAdmin(Auth('admin')->user()) && !\App\Support\AdminAuth::isRootAdmin($admin))
+                                                            <a href="#" data-toggle="modal"
+                                                                data-target="#twofaModal{{ $admin->id }}"
+                                                                class="m-1 btn btn-dark btn-sm">Manage 2FA</a>
+                                                        @endif
+                                                        @if (Auth('admin')->User()->type === 'Super Admin' && $admin->type !== 'Super Admin')
+                                                            <a href="#" data-toggle="modal"
+                                                                data-target="#impersonationModal{{ $admin->id }}"
+                                                                class="m-1 btn btn-success btn-sm">Customer login</a>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </td>
@@ -92,9 +154,13 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                                             data-dismiss="modal">&times;</button>
                                                     </div>
                                                     <div class="modal-body  p-3">
-                                                        <p class="">Are you sure you want to reset password for
-                                                            {{ $admin->firstName }} to <span
-                                                                class="text-primary font-weight-bolder">admin01236</span>
+                                                        <p class="">Are you sure you want to reset the password for
+                                                            <strong>{{ $admin->firstName }} {{ $admin->lastName }}</strong>?</p>
+                                                        <p class="small text-muted mb-3">
+                                                            A new random temporary password will be generated for this
+                                                            account only and emailed to <strong>{{ $admin->email }}</strong>.
+                                                            Other staff accounts are not affected. They can change their
+                                                            own password later from Account Profile.
                                                         </p>
                                                         <a class="btn btn-danger"
                                                             href="{{ url('admin/dashboard/resetadpwd') }}/{{ $admin->id }}">Reset
@@ -216,6 +282,118 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- /send a single user email Modal-->
+
+                                        @if (\App\Support\AdminAuth::isRootAdmin(Auth('admin')->user()) && !\App\Support\AdminAuth::isRootAdmin($admin))
+                                            <!-- Manage 2FA Modal -->
+                                            <div id="twofaModal{{ $admin->id }}" class="modal fade" role="dialog">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h4 class="modal-title">Manage 2FA —
+                                                                {{ $admin->firstName }} {{ $admin->lastName }}</h4>
+                                                            <button type="button" class="close"
+                                                                data-dismiss="modal">&times;</button>
+                                                        </div>
+                                                        <div class="modal-body p-3">
+                                                            <p class="mb-2">
+                                                                <strong>Email:</strong> {{ $admin->email }}<br>
+                                                                <strong>Role:</strong> {{ $admin->type }}<br>
+                                                                <strong>Current 2FA:</strong>
+                                                                @if ($admin->enable_2fa === 'enabled')
+                                                                    <span class="text-success">Enabled</span>
+                                                                @else
+                                                                    <span class="text-muted">Disabled</span>
+                                                                @endif
+                                                            </p>
+                                                            <hr>
+                                                            <h5 class="mb-3">Change 2FA setting</h5>
+                                                            <form method="post"
+                                                                action="{{ route('admin.2fa.toggle', $admin) }}"
+                                                                class="mb-4">
+                                                                @csrf
+                                                                <div class="form-group">
+                                                                    <select name="enable_2fa" class="form-control"
+                                                                        required>
+                                                                        <option value="disabled"
+                                                                            @if ($admin->enable_2fa !== 'enabled') selected @endif>
+                                                                            Disable 2FA</option>
+                                                                        <option value="enabled"
+                                                                            @if ($admin->enable_2fa === 'enabled') selected @endif>
+                                                                            Enable 2FA</option>
+                                                                    </select>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-primary btn-sm">Save
+                                                                    2FA Setting</button>
+                                                            </form>
+                                                            <h5 class="mb-3">Recovery actions</h5>
+                                                            <p class="small text-muted">Use these if the admin is stuck
+                                                                on the OTP screen or did not receive their code. OTP
+                                                                codes are never shown here.</p>
+                                                            <form method="post"
+                                                                action="{{ route('admin.2fa.reset', $admin) }}"
+                                                                class="d-inline">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-warning btn-sm"
+                                                                    onclick="return confirm('Reset 2FA lock for {{ $admin->firstName }}?')">
+                                                                    Reset 2FA Lock
+                                                                </button>
+                                                            </form>
+                                                            @if ($admin->enable_2fa === 'enabled')
+                                                                <form method="post"
+                                                                    action="{{ route('admin.2fa.resend', $admin) }}"
+                                                                    class="d-inline ml-1">
+                                                                    @csrf
+                                                                    <button type="submit" class="btn btn-info btn-sm"
+                                                                        onclick="return confirm('Send a new OTP email to {{ $admin->email }}?')">
+                                                                        Resend OTP Email
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /Manage 2FA Modal -->
+                                        @endif
+
+                                        @if (Auth('admin')->User()->type === 'Super Admin' && $admin->type !== 'Super Admin')
+                                            <div id="impersonationModal{{ $admin->id }}" class="modal fade" role="dialog">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h4 class="modal-title">Customer login —
+                                                                {{ $admin->firstName }} {{ $admin->lastName }}</h4>
+                                                            <button type="button" class="close"
+                                                                data-dismiss="modal">&times;</button>
+                                                        </div>
+                                                        <div class="modal-body p-3">
+                                                            <p class="small text-muted mb-3">
+                                                                Allow this staff member to log in as customers from
+                                                                Manage Users. The global staff policy must also be enabled.
+                                                            </p>
+                                                            <form method="post"
+                                                                action="{{ route('admin.staff.impersonation', $admin) }}">
+                                                                @csrf
+                                                                <div class="form-group">
+                                                                    <select name="can_impersonate_users" class="form-control"
+                                                                        required>
+                                                                        <option value="1"
+                                                                            @if ($admin->can_impersonate_users) selected @endif>
+                                                                            Grant customer login</option>
+                                                                        <option value="0"
+                                                                            @if (!$admin->can_impersonate_users) selected @endif>
+                                                                            Revoke customer login</option>
+                                                                    </select>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-primary btn-sm">Save
+                                                                    permission</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>

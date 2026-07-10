@@ -38,6 +38,7 @@
 <link rel="stylesheet" href="temp/custom/assets/css/style.css">
 <link rel="stylesheet" href="temp/custom/assets/css/responsive.css">
 <link rel="stylesheet" href="temp/custom/assets/css/dark-theme.css">
+<link rel="stylesheet" href="{{ asset('public/css/site-branding.css') }}?v={{ @filemtime(public_path('css/site-branding.css')) }}">
 <title>{{$settings->site_name}} - Dedicated to innovating, simplifying, and humanizing digital banking.</title>
 <link rel="icon" type="image/png" href="{{ asset('storage/app/public/'.$settings->favicon)}}">
 </head>
@@ -69,8 +70,8 @@
     
 <nav class="navbar navbar-expand-md navbar-light" style="">
 <a class="navbar-brand" href="/">
-<img class="logo-light" src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="{{ $settings->site_name }}  " width="200" height="260">
-<img class="logo-dark" src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="{{ $settings->site_name }}" width="200" height="260">
+<img class="logo-light site-logo" src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="{{ $settings->site_name }}">
+<img class="logo-dark site-logo" src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="{{ $settings->site_name }}">
 </a>
 
 
@@ -177,7 +178,7 @@ Loans
   <div class="col-xl-3 col-lg-5 col-md-5 col-sm-6">
   <div class="footer-widget">
   <a href="/" class="footer-logo">
-  <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Image">
+  <img src="{{ asset('storage/app/public/'.$settings->logo)}}" alt="Image" class="site-logo site-logo--footer">
   </a>
   <p class="comp-desc">
   We are now one of the largest digital banking providers, dedicated to innovating, simplifying, and humanizing banking.
